@@ -42,8 +42,7 @@ if (isset($_SESSION['carrinho']) && is_array($_SESSION['carrinho'])) {
                 <?php if ($_SESSION['usuario']['tipo'] === 'admin'): ?>
                     <a href="/geek_house/admin/index.php" class="btn-nav">⚙️ Painel Admin</a>
                     <a href="/geek_house/admin/produtos_listar.php" class="btn-nav">📋 Gerenciar Produtos</a>
-                <?php else: ?>
-                    <a href="/geek_house/perfil.php" class="btn-nav">👤 Meu Perfil</a>
+                    <a href="/geek_house/admin/pedidos_listar.php" class="btn-nav">📦 Pedidos</a>
                 <?php endif; ?>
 
                 <span class="user-greeting">Olá, <strong><?= htmlspecialchars($_SESSION['usuario']['nome']) ?></strong>!</span>
