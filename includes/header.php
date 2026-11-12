@@ -2,6 +2,12 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+// Conta o total de itens no carrinho
+$total_itens_carrinho = 0;
+if (isset($_SESSION['carrinho']) && is_array($_SESSION['carrinho'])) {
+    $total_itens_carrinho = array_sum($_SESSION['carrinho']);
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -9,15 +15,13 @@ if (session_status() === PHP_SESSION_NONE) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geek House — Sua Loja Colecionável</title>
-    
-    <!-- FORÇA O NAVEGADOR A CARREGAR O CSS NOVO SEMPRE -->
     <link rel="stylesheet" href="/geek_house/css/estilo.css?v=<?= time() ?>">
 </head>
 <body>
 
 <header class="top-header">
     <div class="header-container">
-        <!-- LOGO DA KUROMI (COM BUSCA AUTOMÁTICA DE IMAGEM) -->
+        <!-- LOGO DA KUROMI -->
         <a href="/geek_house/index.php" class="logo" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
             <img src="/geek_house/img/logo.png" 
                  onerror="this.onerror=null; this.src='/geek_house/img/geek_house_kuromi_logo.png';" 
@@ -26,9 +30,14 @@ if (session_status() === PHP_SESSION_NONE) {
             <span>GEEK HOUSE</span>
         </a>
 
-        <!-- MENU COM TODOS OS BOTÕES ROXINHOS -->
+        <!-- MENU SUPERIOR COM O CARRINHO DE VERDADE -->
         <nav class="nav-menu">
             <a href="/geek_house/index.php" class="btn-nav">🏪 Vitrine</a>
+            
+            <!-- LINK DO CARRINHO COM CONTADOR DE ITENS -->
+            <a href="/geek_house/carrinho.php" class="btn-nav" style="background-color: #8e245f !important;">
+                🛒 Carrinho <strong>(<?= $total_itens_carrinho ?>)</strong>
+            </a>
             
             <?php if (isset($_SESSION['usuario'])): ?>
                 <?php if ($_SESSION['usuario']['tipo'] === 'admin'): ?>
