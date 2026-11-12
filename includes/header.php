@@ -29,24 +29,24 @@ if (isset($_SESSION['carrinho']) && is_array($_SESSION['carrinho'])) {
             <span>GEEK HOUSE</span>
         </a>
 
-        <!-- MENU SUPERIOR -->
+        <!-- MENU SUPERIOR LIMPO -->
         <nav class="nav-menu">
             <a href="/geek_house/sobre.php" class="btn-nav">ℹ️ Sobre</a>
             <a href="/geek_house/index.php" class="btn-nav">🏪 Vitrine</a>
             
-            <a href="/geek_house/carrinho.php" class="btn-carrinho">
-                🛒 Carrinho <strong>(<?= $total_itens_carrinho ?>)</strong>
-            </a>
+            <!-- CARRINHO: APENAS PARA VISITANTES OU CLIENTES (ADMIN NÃO VÊ) -->
+            <?php if (!isset($_SESSION['usuario']) || $_SESSION['usuario']['tipo'] !== 'admin'): ?>
+                <a href="/geek_house/carrinho.php" class="btn-carrinho">
+                    🛒 Carrinho <strong>(<?= $total_itens_carrinho ?>)</strong>
+                </a>
+            <?php endif; ?>
             
             <?php if (isset($_SESSION['usuario'])): ?>
-                <!-- PERFIL DISPONÍVEL PARA QUALQUER USUÁRIO LOGADO -->
                 <a href="/geek_house/perfil.php" class="btn-nav">👤 Meu Perfil</a>
 
-                <!-- BOTÕES EXCLUSIVOS DO ADMINISTRADOR -->
+                <!-- APENAS O BOTÃO PAINEL ADMIN NO MENU (SEM DUPLICAR OPÇÕES) -->
                 <?php if ($_SESSION['usuario']['tipo'] === 'admin'): ?>
                     <a href="/geek_house/admin/index.php" class="btn-nav">⚙️ Painel Admin</a>
-                    <a href="/geek_house/admin/produtos_listar.php" class="btn-nav">📋 Gerenciar Produtos</a>
-                    <a href="/geek_house/admin/pedidos_listar.php" class="btn-nav">📦 Pedidos</a>
                 <?php endif; ?>
 
                 <span class="user-greeting">Olá, <strong><?= htmlspecialchars($_SESSION['usuario']['nome']) ?></strong>!</span>
