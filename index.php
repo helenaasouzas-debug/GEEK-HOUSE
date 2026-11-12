@@ -1,42 +1,40 @@
 <?php
-require_once "conexao/conexao.php";
+require_once "conexao/cnc.php";
 include "includes/header.php";
 
-// Busca os 6 produtos mais recentes do banco
 $sql = "SELECT p.*, c.nome AS categoria_nome 
         FROM produtos p 
         INNER JOIN categorias c ON p.categoria_id = c.id 
-        ORDER BY p.id DESC LIMIT 6";
-$resultado = mysqli_query($conexao, $sql);
+        ORDER BY p.id DESC";
+$result = $conn->query($sql);
 ?>
 
-<div class="banner-home">
-    <h1>Bem-vindo à Geek House!</h1>
-    <p>O seu universo geek em um só lugar. Mangás, Action Figures e Cartas Pokémon colecionáveis!</p>
-    <a href="produtos.php" class="btn-enviar" style="display:inline-block; width:auto; padding: 12px 25px;">Ver Todo o Catálogo</a>
-</div>
+<?php if (isset($_GET['erro']) && $_GET['erro'] === 'sem_permissao'): ?>
+    <div class="alert alert-danger">⚠️ Acesso negado! Você precisa ser um administrador para acessar essa área.</div>
+<?php endif; ?>
 
-<h2 class="titulo-secao">Destaques da Loja</h2>
+<h1 style="color: #5b164f; text-align:center; margin-bottom: 10px;">🏪 Colecionáveis Geek House</h1>
+<p style="text-align:center; color: #666;">Explore nosso catálogo de mangás, action figures, HQs e vestuário geek!</p>
 
-<div class="grid-produtos">
-    <?php if ($resultado && mysqli_num_rows($resultado) > 0): ?>
-        <?php while ($prod = mysqli_fetch_assoc($resultado)): ?>
-            <div class="card-produto">
-                <img src="<?= htmlspecialchars($prod['imagem_url'] ?: 'https://via.placeholder.com/300x300?text=Geek+House') ?>" alt="<?= htmlspecialchars($prod['nome']) ?>">
-                <div class="card-body">
-                    <span class="categoria-tag"><?= htmlspecialchars($prod['categoria_nome']) ?></span>
-                    <h3><?= htmlspecialchars($prod['nome']) ?></h3>
-                    <p class="especificacao"><?= htmlspecialchars($prod['editora_fabricante'] ?? '') ?> - <?= htmlspecialchars($prod['especificacao'] ?? '') ?></p>
-                    <p class="preco">R$ <?= number_format($prod['preco'], 2, ',', '.') ?></p>
-                    <div class="card-acoes">
-                        <a href="detalhe.php?id=<?= $prod['id'] ?>" class="btn-detalhes">Ver Detalhes</a>
-                        <a href="carrinho.php?acao=add&id=<?= $prod['id'] ?>" class="btn-comprar">+ Carrinho</a>
-                    </div>
+<div class="products-grid">
+    <?php if ($result && $result->num_rows > 0): ?>
+        <?php while ($prod = $result->fetch_assoc()): ?>
+            <div class="product-card">
+                <div>
+                    <img src="<?= htmlspecialchars($prod['imagem_url'] ?: 'img/placeholder.png') ?>" alt="<?= htmlspecialchars($prod['nome']) ?>">
+                    <span class="product-category"><?= htmlspecialchars($prod['categoria_nome']) ?></span>
+                    <h3 class="product-title"><?= htmlspecialchars($prod['nome']) ?></h3>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 10px;"><?= htmlspecialchars($prod['editora_fabricante'] ?: 'Geek') ?></p>
+                </div>
+                <div>
+                    <div class="product-price">R$ <?= number_format($prod['preco'], 2, ',', '.') ?></div>
+                    <p style="font-size: 12px; color: #888; margin-bottom: 10px;">Estoque: <?= $prod['quantidade_estoque'] ?> un.</p>
+                    <button class="btn-primary" onclick="alert('Item adicionado à simulação de carrinho!')">🛒 Comprar</button>
                 </div>
             </div>
         <?php endwhile; ?>
     <?php else: ?>
-        <p>Nenhum produto cadastrado no momento.</p>
+        <p style="text-align:center; grid-column: 1/-1;">Nenhum produto cadastrado no momento.</p>
     <?php endif; ?>
 </div>
 
