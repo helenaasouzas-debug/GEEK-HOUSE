@@ -15,9 +15,11 @@ if (session_status() === PHP_SESSION_NONE) {
 
 <header class="top-header">
     <div class="header-container">
-        <a href="/geek_house/index.php" class="logo">
-            ⚡ <span>GEEK HOUSE</span>
-        </a>
+        <!-- LOGO FOFINHA DA KUROMI -->
+<a href="/geek_house/index.php" class="logo" style="display: flex; align-items: center; gap: 10px;">
+    <img src="/geek_house/img/logo.png" alt="Geek House Logo" style="height: 48px; border-radius: 50%; border: 2px solid #e9d5ff;">
+    <span>GEEK HOUSE</span>
+</a>
 
         <nav class="nav-menu">
             <a href="/geek_house/index.php">🏪 Vitrine</a>
