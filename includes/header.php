@@ -39,6 +39,10 @@ if (isset($_SESSION['carrinho']) && is_array($_SESSION['carrinho'])) {
             </a>
             
             <?php if (isset($_SESSION['usuario'])): ?>
+                <!-- PERFIL DISPONÍVEL PARA QUALQUER USUÁRIO LOGADO -->
+                <a href="/geek_house/perfil.php" class="btn-nav">👤 Meu Perfil</a>
+
+                <!-- BOTÕES EXCLUSIVOS DO ADMINISTRADOR -->
                 <?php if ($_SESSION['usuario']['tipo'] === 'admin'): ?>
                     <a href="/geek_house/admin/index.php" class="btn-nav">⚙️ Painel Admin</a>
                     <a href="/geek_house/admin/produtos_listar.php" class="btn-nav">📋 Gerenciar Produtos</a>
