@@ -1,79 +1,66 @@
 <?php
-define('IN_ADMIN', true);
+require_once "../conexao/cnc.php";
 require_once "../conexao/auth.php";
 verificar_admin();
-
-require_once "../conexao/conexao.php";
 
 $sql = "SELECT p.*, c.nome AS categoria_nome 
         FROM produtos p 
         INNER JOIN categorias c ON p.categoria_id = c.id 
         ORDER BY p.id DESC";
-$resultado = mysqli_query($conexao, $sql);
-
-$mensagem = $_GET['mensagem'] ?? '';
-$erro     = $_GET['erro'] ?? '';
+$result = $conn->query($sql);
 
 include "../includes/header.php";
 ?>
 
-<div class="card-box" style="max-width: 950px;">
-    <h1>Gerenciar Produtos Geek</h1>
-
-    <?php if (!empty($mensagem)): ?>
-        <p class="sucesso"><?= htmlspecialchars($mensagem) ?></p>
-    <?php endif; ?>
-
-    <?php if (!empty($erro)): ?>
-        <p class="erro"><?= htmlspecialchars($erro) ?></p>
-    <?php endif; ?>
-
-    <div style="margin-bottom: 20px; text-align: right;">
-        <a href="produto_cadastrar.php" class="btn-enviar" style="text-decoration:none; padding: 10px 15px; width:auto; display:inline-block;">+ Cadastrar Novo Item</a>
+<div class="card-box">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h1>📋 Gerenciamento de Produtos</h1>
+        <a href="produto_cadastrar.php" class="btn-enviar" style="width:auto; text-decoration:none;">+ Novo Produto</a>
     </div>
 
-    <?php if ($resultado && mysqli_num_rows($resultado) > 0): ?>
-        <div class="tabela-container">
-            <table style="width:100%; border-collapse: collapse; color: white;">
-                <thead>
-                    <tr style="background-color: #8e245f; text-align: left;">
-                        <th style="padding: 10px;">ID</th>
-                        <th style="padding: 10px;">Produto</th>
-                        <th style="padding: 10px;">Categoria</th>
-                        <th style="padding: 10px;">Preço</th>
-                        <th style="padding: 10px;">Estoque</th>
-                        <th style="padding: 10px;">Ações</th>
+    <?php if (isset($_GET['msg'])): ?>
+        <?php if ($_GET['msg'] === 'cadastrado'): ?>
+            <div class="alert alert-success">✅ Produto cadastrado com sucesso!</div>
+        <?php elseif ($_GET['msg'] === 'atualizado'): ?>
+            <div class="alert alert-success">✅ Produto atualizado com sucesso!</div>
+        <?php elseif ($_GET['msg'] === 'excluido'): ?>
+            <div class="alert alert-success">🗑️ Produto excluído com sucesso!</div>
+        <?php endif; ?>
+    <?php endif; ?>
+
+    <table class="table-custom">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome do Produto</th>
+                <th>Categoria</th>
+                <th>Preço</th>
+                <th>Estoque</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if ($result && $result->num_rows > 0): ?>
+                <?php while ($prod = $result->fetch_assoc()): ?>
+                    <tr>
+                        <td><strong>#<?= $prod['id'] ?></strong></td>
+                        <td><?= htmlspecialchars($prod['nome']) ?></td>
+                        <td><?= htmlspecialchars($prod['categoria_nome']) ?></td>
+                        <td>R$ <?= number_format($prod['preco'], 2, ',', '.') ?></td>
+                        <td><?= $prod['quantidade_estoque'] ?></td>
+                        <td>
+                            <a href="produto_editar.php?id=<?= $prod['id'] ?>" class="btn-edit">Editar</a>
+                            <a href="produto_excluir.php?id=<?= $prod['id'] ?>" class="btn-danger" onclick="return confirm('Deseja realmente excluir este produto?')">Excluir</a>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php while ($prod = mysqli_fetch_assoc($resultado)): ?>
-                        <tr style="border-bottom: 1px solid #7c226a;">
-                            <td style="padding: 10px;"><?= $prod['id'] ?></td>
-                            <td style="padding: 10px;">
-                                <strong><?= htmlspecialchars($prod['nome']) ?></strong><br>
-                                <small style="color: #d8b4e8;"><?= htmlspecialchars($prod['editora_fabricante'] ?? '') ?></small>
-                            </td>
-                            <td style="padding: 10px;"><?= htmlspecialchars($prod['categoria_nome']) ?></td>
-                            <td style="padding: 10px;">R$ <?= number_format($prod['preco'], 2, ',', '.') ?></td>
-                            <td style="padding: 10px;"><?= $prod['quantidade_estoque'] ?> un.</td>
-                            <td style="padding: 10px;">
-                                <a href="produto_editar.php?id=<?= $prod['id'] ?>" style="color: #f0d5ff; font-weight: bold; margin-right: 10px; text-decoration:none;">[Editar]</a>
-                                <a href="produto_excluir.php?id=<?= $prod['id'] ?>" 
-                                   style="color: #ff9999; font-weight: bold; text-decoration:none;" 
-                                   onclick="return confirm('Tem certeza que deseja excluir o item '<?= htmlspecialchars($prod['nome']) ?>'?');">[Excluir]</a>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
-        </div>
-    <?php else: ?>
-        <p style="text-align: center; color: #f0d5ff;">Nenhum produto cadastrado no momento.</p>
-    <?php endif; ?>
-
-    <div style="margin-top: 25px;">
-        <a href="index.php" class="btn-voltar">Voltar para o Painel Admin</a>
-    </div>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="6" style="text-align:center;">Nenhum produto cadastrado.</td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
 </div>
 
 <?php include "../includes/footer.php"; ?>
