@@ -58,14 +58,15 @@ body {
     background: #ffffff;
 }
 
-/* MENU DE NAVEGAÇÃO SUPERIOR (TODOS OS BOTÕES ROXINHOS) */
+/* MENU DE NAVEGAÇÃO SUPERIOR */
 .nav-menu {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.nav-menu a, 
+/* Botões de Navegação Roxinhos (exceto o botão de sair) */
+.nav-menu a:not(.btn-logout), 
 .btn-nav {
     color: #ffffff !important;
     text-decoration: none;
@@ -73,31 +74,35 @@ body {
     font-size: 14px;
     padding: 8px 16px;
     border-radius: 8px;
-    background-color: #7c3aed !important; /* Roxo para todos os botões */
+    background-color: #7c3aed !important;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     transition: all 0.3s ease;
     display: inline-block;
 }
 
-.nav-menu a:hover, 
+.nav-menu a:not(.btn-logout):hover, 
 .btn-nav:hover {
-    background-color: #6d28d9 !important; /* Roxo mais escuro ao passar o mouse */
+    background-color: #6d28d9 !important;
     transform: translateY(-2px);
 }
 
-/* BOTÃO DE SAIR (LOGOUT) EM VERMELHO */
-.btn-logout {
-    background-color: #dc2626 !important;
-}
-
-.btn-logout:hover {
-    background-color: #b91c1c !important;
-}
-
-.user-greeting {
+/* BOTÃO DE SAIR (LOGOUT) EM VERMELHO DESTACADO */
+.nav-menu a.btn-logout {
+    color: #ffffff !important;
+    text-decoration: none;
+    font-weight: 600;
     font-size: 14px;
-    color: #e9d5ff;
-    margin-right: 5px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background-color: #dc2626 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.nav-menu a.btn-logout:hover {
+    background-color: #b91c1c !important;
+    transform: translateY(-2px);
 }
 
 /* 3. CONTEÚDO PRINCIPAL (MAIN) */
