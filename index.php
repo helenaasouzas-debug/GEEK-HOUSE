@@ -14,7 +14,7 @@ $result = $conn->query($sql);
 <?php endif; ?>
 
 <h1 style="color: #5b164f; text-align:center; margin-bottom: 10px;">🏪 Colecionáveis Geek House</h1>
-<p style="text-align:center; color: #666;">Explore nosso catálogo de mangás, action figures, HQs e vestuário geek!</p>
+<p style="text-align:center; color: #666; margin-bottom: 25px;">Explore nosso catálogo de mangás, action figures, HQs e vestuário geek!</p>
 
 <div class="products-grid">
     <?php if ($result && $result->num_rows > 0): ?>
@@ -29,7 +29,11 @@ $result = $conn->query($sql);
                 <div>
                     <div class="product-price">R$ <?= number_format($prod['preco'], 2, ',', '.') ?></div>
                     <p style="font-size: 12px; color: #888; margin-bottom: 10px;">Estoque: <?= $prod['quantidade_estoque'] ?> un.</p>
-                    <button class="btn-primary" onclick="alert('Item adicionado à simulação de carrinho!')">🛒 Comprar</button>
+                    
+                    <!-- BOTÃO REAL DE ADICIONAR AO CARRINHO -->
+                    <a href="carrinho.php?acao=add&id=<?= $prod['id'] ?>" class="btn-primary" style="text-decoration:none; display:block; text-align:center;">
+                        🛒 Adicionar ao Carrinho
+                    </a>
                 </div>
             </div>
         <?php endwhile; ?>
