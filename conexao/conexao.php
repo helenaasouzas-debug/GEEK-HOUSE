@@ -1,18 +1,15 @@
 <?php
-// Configurações do banco de dados MySQL
+// conexao/cnc.php - Conexão MySQLi com o banco loja_geek
 $host    = "localhost";
 $usuario = "root";
 $senha   = "";
 $banco   = "loja_geek";
 
-// Criação da conexão com o MySQL
-$conexao = mysqli_connect($host, $usuario, $senha, $banco);
+$conn = new mysqli($host, $usuario, $senha, $banco);
 
-// Verifica se houve erro de conexão
-if (!$conexao) {
-    die("Falha na conexão com o banco de dados: " . mysqli_connect_error());
+if ($conn->connect_error) {
+    die("Falha na conexão com o banco de dados: " . $conn->connect_error);
 }
 
-// Define o conjunto de caracteres para evitar problemas de acentuação
-mysqli_set_charset($conexao, "utf8mb4");
+$conn->set_charset("utf8mb4");
 ?>
