@@ -1,69 +1,137 @@
--- Criação do Banco de Dados
-CREATE DATABASE IF NOT EXISTS loja_geek;
+-- ============================================================
+-- PROJETO GEEK HOUSE - SISTEMA WEB E-COMMERCE
+-- ARQUIVO: banco.sql (Banco de Dados MySQL)
+-- ============================================================
+
+CREATE DATABASE IF NOT EXISTS loja_geek DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE loja_geek;
 
--- Tabela de Usuários (obrigatória para Login e Sessão)
-CREATE TABLE IF NOT EXISTS usuarios (
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ------------------------------------------------------------
+-- 1. ESTRUTURA DAS TABELAS
+-- ------------------------------------------------------------
+
+-- Tabela: categorias
+DROP TABLE IF EXISTS categorias;
+CREATE TABLE categorias (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL UNIQUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tabela: usuarios
+DROP TABLE IF EXISTS usuarios;
+CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
-    tipo ENUM('admin', 'cliente') DEFAULT 'cliente'
-);
+    tipo ENUM('admin', 'cliente') NOT NULL DEFAULT 'cliente'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabela 1 do Negócio: Categorias
-CREATE TABLE IF NOT EXISTS categorias (
+-- Tabela: produtos
+DROP TABLE IF EXISTS produtos;
+CREATE TABLE produtos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(50) NOT NULL
-);
-
-INSERT INTO categorias (nome) VALUES ('Mangás'), ('Figures'), ('Cartas Pokémon')
-ON DUPLICATE KEY UPDATE nome=VALUES(nome);
-
--- Tabela 2 do Negócio: Produtos (com campos específicos geek)
-CREATE TABLE IF NOT EXISTS produtos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(150) NOT NULL,
+    nome VARCHAR(100) NOT NULL,
     categoria_id INT NOT NULL,
     preco DECIMAL(10,2) NOT NULL,
     quantidade_estoque INT NOT NULL DEFAULT 0,
-    editora_fabricante VARCHAR(100),
-    especificacao VARCHAR(150),
-    condicao ENUM('Novo/Lacrado', 'Seminovo', 'Raro/Colecionável') DEFAULT 'Novo/Lacrado',
-    descricao TEXT,
-    imagem_url VARCHAR(255),
+    editora_fabricante VARCHAR(100) NULL,
+    especificacao VARCHAR(100) NULL,
+    condicao VARCHAR(50) DEFAULT 'Novo/Lacrado',
+    descricao TEXT NULL,
+    imagem_url VARCHAR(255) NULL DEFAULT 'img/placeholder.png',
     FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabela 3 do Negócio: Vendas
-CREATE TABLE IF NOT EXISTS vendas (
+-- Tabela: vendas
+DROP TABLE IF EXISTS vendas;
+CREATE TABLE vendas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
-    data_venda DATETIME DEFAULT CURRENT_TIMESTAMP,
+    data_venda DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     valor_total DECIMAL(10,2) NOT NULL,
     forma_pagamento VARCHAR(50) NOT NULL,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-);
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabela 4 do Negócio: Itens da Venda
-CREATE TABLE IF NOT EXISTS itens_venda (
+-- Tabela: itens_venda
+DROP TABLE IF EXISTS itens_venda;
+CREATE TABLE itens_venda (
     id INT AUTO_INCREMENT PRIMARY KEY,
     venda_id INT NOT NULL,
     produto_id INT NOT NULL,
     quantidade INT NOT NULL,
     preco_unitario DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (venda_id) REFERENCES vendas(id) ON DELETE CASCADE,
-    FOREIGN KEY (produto_id) REFERENCES produtos(id)
-);
+    FOREIGN KEY (produto_id) REFERENCES produtos(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Inserção de usuários de teste
-INSERT INTO usuarios (nome, email, senha, tipo) VALUES 
-('Administrador', 'admin@geekhouse.com', '12345', 'admin'),
-('Cliente Exemplo', 'cliente@geekhouse.com', '12345', 'cliente')
-ON DUPLICATE KEY UPDATE nome=VALUES(nome);
+SET FOREIGN_KEY_CHECKS = 1;
 
--- Inserção de produtos de teste
-INSERT INTO produtos (nome, categoria_id, preco, quantidade_estoque, editora_fabricante, especificacao, condicao, descricao, imagem_url) VALUES
-('Mangá Chainsaw Man Vol. 1', 1, 34.90, 15, 'Panini', 'Vol. 1 - Tatsuki Fujimoto', 'Novo/Lacrado', 'Denji é um jovem que vive como caçador de demônios para quitar as dívidas do pai falecido.', 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400'),
-('Figure Roronoa Zoro - One Piece', 2, 289.90, 5, 'Bandai / Banpresto', 'Escala 1/8 - 20cm', 'Novo/Lacrado', 'Action figure detalhada do espadachim Roronoa Zoro em pose de combate.', 'https://images.unsplash.com/photo-1563089145-599997674d42?w=400'),
-('Carta Charizard Holo Rara', 3, 150.00, 2, 'Copag / Pokémon TCG', 'Rara Holofoil #004', 'Raro/Colecionável', 'Carta colecionável clássica do Charizard em perfeito estado de conservação.', 'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=400');
+-- ------------------------------------------------------------
+-- 2. CARGA DE DADOS INICIAIS (INSERTS)
+-- ------------------------------------------------------------
+
+-- Inserindo Categorias (15 Categorias Expandidas)
+INSERT INTO categorias (id, nome) VALUES
+(1, 'Mangás'),
+(2, 'HQs & Quadrinhos'),
+(3, 'Action Figures'),
+(4, 'Camisetas'),
+(5, 'Canecas'),
+(6, 'Colecionáveis Premium'),
+(7, 'Posteres & Quadros'),
+(8, 'Jogos de Tabuleiro'),
+(9, 'Card Games'),
+(10, 'Chaveiros'),
+(11, 'Pelúcias'),
+(12, 'Acessórios Geek'),
+(13, 'Estátuas'),
+(14, 'Funko Pop'),
+(15, 'Light Novels');
+
+-- Inserindo Usuários (Administrador e Clientes para teste de Login/Sessão)
+INSERT INTO usuarios (id, nome, email, senha, tipo) VALUES
+(1, 'Administrador Geek', 'admin@geekhouse.com', '12345', 'admin'),
+(2, 'Cliente Geek', 'cliente@geekhouse.com', '12345', 'cliente'),
+(3, 'Peter Parker', 'peter@dailybugle.com', '12345', 'cliente'),
+(4, 'Bruce Wayne', 'bruce@wayne.com', '12345', 'cliente'),
+(5, 'Tony Stark', 'tony@stark.com', '12345', 'cliente'),
+(6, 'Clark Kent', 'clark@dailyplanet.com', '12345', 'cliente'),
+(7, 'Diana Prince', 'diana@amazon.com', '12345', 'cliente'),
+(8, 'Barry Allen', 'barry@centralcitypd.com', '12345', 'cliente');
+
+-- Inserindo Produtos Colecionáveis
+INSERT INTO produtos (id, nome, categoria_id, preco, quantidade_estoque, editora_fabricante, especificacao, condicao, descricao, imagem_url) VALUES
+(1, 'Mangá One Piece Volume 01', 1, 34.90, 15, 'Panini Comics', 'Vol. 01', 'Novo/Lacrado', 'Primeiro volume da épica jornada de Luffy', 'img/mangas/one_piece_vol_01.jpg'),
+(2, 'Mangá One Piece Volume 02', 1, 34.90, 12, 'Panini Comics', 'Vol. 02', 'Novo/Lacrado', 'Continuação das aventuras de One Piece', 'img/mangas/one_piece_vol_02.jpg'),
+(3, 'HQ Homem-Aranha Volume 01', 2, 49.90, 10, 'Panini Comics', 'Edição Especial', 'Novo/Lacrado', 'Aventuras clássicas do Homem-Aranha', 'img/hqs/spiderman_vol_01.jpg'),
+(4, 'HQ Batman Volume 01', 2, 54.90, 8, 'Panini Comics', 'Edição de Luxo', 'Novo/Lacrado', 'História marcante do Cavaleiro das Trevas', 'img/hqs/batman_vol_01.jpg'),
+(5, 'Figure Roronoa Zoro 15cm', 3, 250.00, 5, 'Bandai Tamashii', 'Escala 15cm', 'Novo/Lacrado', 'Action figure rica em detalhes do Zoro', 'img/figures/zoro_15cm.jpg'),
+(6, 'Figure Monkey D. Luffy 15cm', 3, 250.00, 5, 'Bandai Tamashii', 'Escala 15cm', 'Novo/Lacrado', 'Action figure oficial do Luffy', 'img/figures/luffy_15cm.jpg'),
+(7, 'Camiseta Gojo Satoru (M)', 4, 79.90, 12, 'Piticas', 'Tamanho M', 'Novo/Lacrado', 'Camiseta 100% algodão Jujutsu Kaisen', 'img/camisetas/gojo_m.jpg'),
+(8, 'Camiseta Ryomen Sukuna (G)', 4, 79.90, 10, 'Piticas', 'Tamanho G', 'Novo/Lacrado', 'Camiseta estilizada do Rei das Maldições', 'img/camisetas/sukuna_g.jpg'),
+(9, 'Caneca Marvel Comics', 5, 45.00, 20, 'Canecas & Cia', '350ml Porcelana', 'Novo/Lacrado', 'Caneca temática dos Vingadores', 'img/canecas/marvel.jpg'),
+(10, 'Caneca Attack on Titan', 5, 49.90, 15, 'Canecas & Cia', '350ml Porcelana', 'Novo/Lacrado', 'Caneca com o brasão da Tropa de Exploração', 'img/canecas/aot.jpg'),
+(11, 'Pokémon TCG Booster Pack', 9, 12.00, 50, 'Copag', 'Edição Estelar', 'Novo/Lacrado', 'Pacote de cartas colecionáveis Pokémon', 'img/cards/pokemon_booster.jpg'),
+(12, 'Funko Pop! Naruto Uzumaki', 14, 130.00, 7, 'Funko Import', 'Pop! Animation', 'Novo/Lacrado', 'Boneco colecionável de vinil do Naruto', 'img/funko/naruto.jpg');
+
+-- Inserindo Vendas e Histórico de Pedidos
+INSERT INTO vendas (id, usuario_id, data_venda, valor_total, forma_pagamento) VALUES
+(1, 4, '2026-10-01 10:30:00', 284.90, 'Cartão de Crédito'),
+(2, 5, '2026-10-02 11:15:00', 179.70, 'PIX'),
+(3, 6, '2026-10-03 14:20:00', 340.00, 'Cartão de Crédito'),
+(4, 7, '2026-10-04 16:45:00', 99.90, 'Boleto Bancário');
+
+-- Inserindo Itens dos Pedidos
+INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES
+(1, 1, 1, 34.90),
+(1, 5, 1, 250.00),
+(2, 3, 2, 49.90),
+(2, 7, 1, 79.90),
+(3, 6, 1, 250.00),
+(3, 9, 2, 45.00),
+(4, 4, 1, 54.90),
+(4, 10, 1, 45.00);
