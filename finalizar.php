@@ -1,97 +1,165 @@
 <?php
+require_once "conexao/cnc.php";
 require_once "conexao/auth.php";
-verificar_login(); // Exige estar logado para fechar o pedido
 
-require_once "conexao/conexao.php";
+// Exige que o cliente esteja logado para finalizar
+verificar_login();
 
+// Se o carrinho estiver vazio, volta para a vitrine
 if (empty($_SESSION['carrinho'])) {
-    header("Location: produtos.php");
-    exit;
+    header("Location: index.php");
+    exit();
 }
 
-$usuario_id = $_SESSION['usuario']['id'];
-$mensagem_sucesso = "";
-$erro = "";
+$mensagem_sucesso = false;
+$pedido_id = 0;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $forma_pagamento = $_POST['forma_pagamento'] ?? 'Pix';
+// Buscar dados dos produtos no carrinho para resumo e cálculo
+$ids = implode(',', array_keys($_SESSION['carrinho']));
+$result = $conn->query("SELECT * FROM produtos WHERE id IN ($ids)");
+$produtos_compra = array();
+$valor_total = 0;
 
-    // 1. Calcula o total da venda consultando os preços no banco
-    $ids = implode(',', array_keys($_SESSION['carrinho']));
-    $sql_prods = "SELECT id, preco, quantidade_estoque FROM produtos WHERE id IN ($ids)";
-    $res_prods = mysqli_query($conexao, $sql_prods);
-
-    $valor_total = 0;
-    $itens_compra = [];
-
-    while ($p = mysqli_fetch_assoc($res_prods)) {
-        $qtd_pedida = $_SESSION['carrinho'][$p['id']];
-        $valor_total += ($p['preco'] * $qtd_pedida);
-        $itens_compra[] = [
-            'produto_id' => $p['id'],
-            'quantidade' => $qtd_pedida,
-            'preco_unitario' => $p['preco']
-        ];
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $produtos_compra[] = $row;
+        $qtd = $_SESSION['carrinho'][$row['id']];
+        $valor_total += ($row['preco'] * $qtd);
     }
+}
 
-    // 2. Insere na tabela de Vendas
-    $sql_venda = "INSERT INTO vendas (usuario_id, valor_total, forma_pagamento) VALUES (?, ?, ?)";
-    $stmt_venda = mysqli_prepare($conexao, $sql_venda);
-    mysqli_stmt_bind_param($stmt_venda, "ids", $usuario_id, $valor_total, $forma_pagamento);
+// PROCESSAR O FECHAMENTO DO PEDIDO
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $rua             = trim($_POST['rua']);
+    $numero          = trim($_POST['numero']);
+    $bairro          = trim($_POST['bairro']);
+    $cidade          = trim($_POST['cidade']);
+    $estado          = trim($_POST['estado']);
+    $cep             = trim($_POST['cep']);
+    $forma_pagamento = trim($_POST['forma_pagamento']);
+    $usuario_id      = $_SESSION['usuario']['id'];
 
-    if (mysqli_stmt_execute($stmt_venda)) {
-        $venda_id = mysqli_insert_id($conexao);
+    if (!empty($rua) && !empty($cidade) && !empty($forma_pagamento)) {
+        
+        // 1. Grava a Venda/Pedido no MySQL
+        $stmt_venda = $conn->prepare("INSERT INTO vendas (usuario_id, valor_total, forma_pagamento, data_venda) VALUES (?, ?, ?, NOW())");
+        $stmt_venda->bind_param("ids", $usuario_id, $valor_total, $forma_pagamento);
+        
+        if ($stmt_venda->execute()) {
+            $pedido_id = $conn->insert_id;
 
-        // 3. Insere os Itens da Venda e atualiza o Estoque
-        foreach ($itens_compra as $item) {
-            $sql_item = "INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)";
-            $stmt_item = mysqli_prepare($conexao, $sql_item);
-            mysqli_stmt_bind_param($stmt_item, "iiid", $venda_id, $item['produto_id'], $item['quantidade'], $item['preco_unitario']);
-            mysqli_stmt_execute($stmt_item);
+            // 2. Grava cada item da venda e atualiza o estoque
+            $stmt_item = $conn->prepare("INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)");
+            $stmt_estoque = $conn->prepare("UPDATE produtos SET quantidade_estoque = quantidade_estoque - ? WHERE id = ?");
 
-            // Baixa no estoque
-            $sql_estoque = "UPDATE produtos SET quantidade_estoque = quantidade_estoque - ? WHERE id = ?";
-            $stmt_est = mysqli_prepare($conexao, $sql_estoque);
-            mysqli_stmt_bind_param($stmt_est, "ii", $item['quantidade'], $item['produto_id']);
-            mysqli_stmt_execute($stmt_est);
+            foreach ($produtos_compra as $prod) {
+                $qtd = $_SESSION['carrinho'][$prod['id']];
+                $preco_unit = $prod['preco'];
+                
+                // Grava item
+                $stmt_item->bind_param("iiid", $pedido_id, $prod['id'], $qtd, $preco_unit);
+                $stmt_item->execute();
+
+                // Baixa no estoque
+                $stmt_estoque->bind_param("ii", $qtd, $prod['id']);
+                $stmt_estoque->execute();
+            }
+
+            // 3. Limpa o carrinho da sessão
+            $_SESSION['carrinho'] = array();
+            $mensagem_sucesso = true;
         }
-
-        // Limpa o carrinho
-        $_SESSION['carrinho'] = [];
-        $mensagem_sucesso = "Pedido #$venda_id finalizado com sucesso! Obrigado por comprar na Geek House!";
-    } else {
-        $erro = "Erro ao processar o pedido: " . mysqli_error($conexao);
     }
 }
 
 include "includes/header.php";
 ?>
 
-<div class="card-box" style="max-width: 600px;">
-    <?php if (!empty($mensagem_sucesso)): ?>
-        <h2 style="color: #66ff99;">Pedido Confirmado! 🎉</h2>
-        <p><?= $mensagem_sucesso ?></p>
-        <br>
-        <a href="produtos.php" class="btn-primary">Voltar às Compras</a>
+<div class="card-box" style="max-width: 750px;">
+    <?php if ($mensagem_sucesso): ?>
+        <div style="text-align: center; padding: 20px;">
+            <h1 style="color: #166534; margin-bottom: 15px;">🎉 Pedido #<?= $pedido_id ?> Realizado com Sucesso!</h1>
+            <p style="font-size: 16px; color: #444; margin-bottom: 20px;">
+                Obrigado por comprar na <strong>Geek House</strong>, <?= htmlspecialchars($_SESSION['usuario']['nome']) ?>!
+            </p>
+            <div class="alert alert-success" style="display:inline-block; text-align:left;">
+                <p><strong>Forma de Pagamento:</strong> <?= htmlspecialchars($_POST['forma_pagamento']) ?></p>
+                <p><strong>Total Pago:</strong> R$ <?= number_format($valor_total, 2, ',', '.') ?></p>
+                <p><strong>Endereço de Entrega:</strong> <?= htmlspecialchars($_POST['rua']) ?>, nº <?= htmlspecialchars($_POST['numero']) ?> - <?= htmlspecialchars($_POST['cidade']) ?>/<?= htmlspecialchars($_POST['estado']) ?></p>
+            </div>
+            <br><br>
+            <a href="index.php" class="btn-primary" style="text-decoration:none; display:inline-block; width:auto; padding: 12px 30px;">Voltar para a Loja</a>
+        </div>
     <?php else: ?>
-        <h2>Finalizar Pedido</h2>
-        <p style="text-align:center; margin-bottom:20px;">Cliente: <strong><?= htmlspecialchars($_SESSION['usuario']['nome']) ?></strong></p>
-
-        <?php if (!empty($erro)): ?>
-            <p class="erro"><?= $erro ?></p>
-        <?php endif; ?>
+        <h1>💳 Finalizar Pedido</h1>
+        
+        <!-- RESUMO DO PEDIDO -->
+        <div style="background-color: #faf5ff; padding: 15px; border-radius: 8px; border: 1px solid #d8b4fe; margin-bottom: 25px;">
+            <h3 style="color: #5b164f; margin-bottom: 10px;">Resumo dos Itens</h3>
+            <?php foreach ($produtos_compra as $prod): 
+                $qtd = $_SESSION['carrinho'][$prod['id']];
+            ?>
+                <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom: 5px;">
+                    <span><?= $qtd ?>x <?= htmlspecialchars($prod['nome']) ?></span>
+                    <strong>R$ <?= number_format($prod['preco'] * $qtd, 2, ',', '.') ?></strong>
+                </div>
+            <?php endforeach; ?>
+            <hr style="border:0; border-top: 1px solid #d8b4fe; margin: 10px 0;">
+            <div style="display:flex; justify-content:space-between; font-size:18px; color: #5b164f;">
+                <span>Total a Pagar:</span>
+                <strong>R$ <?= number_format($valor_total, 2, ',', '.') ?></strong>
+            </div>
+        </div>
 
         <form method="POST" action="finalizar.php">
-            <div class="campo">
-                <label>Forma de Pagamento:</label>
-                <select name="forma_pagamento" required>
-                    <option value="Pix">Pix (Aprovação Instantânea)</option>
-                    <option value="Cartão de Crédito">Cartão de Crédito</option>
-                    <option value="Boleto">Boleto Bancário</option>
+            <h3 style="color: #5b164f; margin-bottom: 15px;">📍 Endereço de Entrega</h3>
+            
+            <div style="display: flex; gap: 15px;">
+                <div class="form-group" style="flex: 3;">
+                    <label for="rua">Rua / Avenida *</label>
+                    <input type="text" id="rua" name="rua" class="form-control" required placeholder="Ex: Rua dos Bobos">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="numero">Número *</label>
+                    <input type="text" id="numero" name="numero" class="form-control" required placeholder="123">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 15px;">
+                <div class="form-group" style="flex: 1;">
+                    <label for="bairro">Bairro</label>
+                    <input type="text" id="bairro" name="bairro" class="form-control" placeholder="Centro">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="cidade">Cidade *</label>
+                    <input type="text" id="cidade" name="cidade" class="form-control" required placeholder="São Paulo">
+                </div>
+                <div class="form-group" style="width: 80px;">
+                    <label for="estado">UF *</label>
+                    <input type="text" id="estado" name="estado" class="form-control" required maxlength="2" placeholder="SP">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="cep">CEP *</label>
+                <input type="text" id="cep" name="cep" class="form-control" required placeholder="00000-000">
+            </div>
+
+            <h3 style="color: #5b164f; margin-top: 25px; margin-bottom: 15px;">💰 Forma de Pagamento</h3>
+            
+            <div class="form-group">
+                <select name="forma_pagamento" id="forma_pagamento" class="form-control" required>
+                    <option value="">Selecione como deseja pagar...</option>
+                    <option value="Pix">⚡ Pix (Aprovação Instantânea)</option>
+                    <option value="Cartão de Crédito">💳 Cartão de Crédito</option>
+                    <option value="Boleto Bancário">📄 Boleto Bancário</option>
                 </select>
             </div>
 
-            <button type="submit" class="btn-enviar">Confirmar e Pagar</button>
+            <button type="submit" class="btn-enviar" style="margin-top: 15px;">Confirmar e Pagar R$ <?= number_format($valor_total, 2, ',', '.') ?></button>
+            <div style="text-align: center;">
+                <a href="carrinho.php" class="btn-voltar">Voltar para o Carrinho</a>
+            </div>
         </form>
     <?php endif; ?>
 </div>
