@@ -1,132 +1,127 @@
 <?php
-define('IN_ADMIN', true);
+require_once "../conexao/cnc.php";
 require_once "../conexao/auth.php";
 verificar_admin();
 
-require_once "../conexao/conexao.php";
-
-$id = (int) ($_GET['id'] ?? 0);
-$erro = "";
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if ($id <= 0) {
-    header("Location: produtos_listar.php?erro=ID+inv%C3%A1lido!");
-    exit;
+    header("Location: produtos_listar.php");
+    exit();
 }
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $nome               = trim($_POST['nome'] ?? '');
-    $categoria_id       = (int) ($_POST['categoria_id'] ?? 0);
-    $preco              = (float) ($_POST['preco'] ?? 0);
-    $quantidade_estoque = (int) ($_POST['quantidade_estoque'] ?? 0);
-    $editora_fabricante = trim($_POST['editora_fabricante'] ?? '');
-    $especificacao      = trim($_POST['especificacao'] ?? '');
-    $condicao           = $_POST['condicao'] ?? 'Novo/Lacrado';
-    $descricao          = trim($_POST['descricao'] ?? '');
-    $imagem_url         = trim($_POST['imagem_url'] ?? '');
-
-    if (empty($nome) || $categoria_id <= 0 || $preco <= 0) {
-        $erro = "Preencha todos os campos obrigatórios!";
-    } else {
-        $sql = "UPDATE produtos 
-                SET nome = ?, categoria_id = ?, preco = ?, quantidade_estoque = ?, editora_fabricante = ?, especificacao = ?, condicao = ?, descricao = ?, imagem_url = ?
-                WHERE id = ?";
-        $stmt = mysqli_prepare($conexao, $sql);
-        mysqli_stmt_bind_param($stmt, "sidisssssi", $nome, $categoria_id, $preco, $quantidade_estoque, $editora_fabricante, $especificacao, $condicao, $descricao, $imagem_url, $id);
-
-        if (mysqli_stmt_execute($stmt)) {
-            header("Location: produtos_listar.php?mensagem=Produto+atualizado+com+sucesso!");
-            exit;
-        } else {
-            $erro = "Erro ao atualizar produto: " . mysqli_error($conexao);
-        }
-    }
-}
-
-$sql_busca  = "SELECT * FROM produtos WHERE id = ? LIMIT 1";
-$stmt_busca = mysqli_prepare($conexao, $sql_busca);
-mysqli_stmt_bind_param($stmt_busca, "i", $id);
-mysqli_stmt_execute($stmt_busca);
-$resultado_busca = mysqli_stmt_get_result($stmt_busca);
-$produto = mysqli_fetch_assoc($resultado_busca);
+// Buscar dados do produto existente
+$stmt = $conn->prepare("SELECT * FROM produtos WHERE id = ?");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$produto = $stmt->get_result()->fetch_assoc();
 
 if (!$produto) {
-    header("Location: produtos_listar.php?erro=Produto+n%C3%A3o+encontrado!");
-    exit;
+    header("Location: produtos_listar.php");
+    exit();
 }
 
-$query_cat = mysqli_query($conexao, "SELECT * FROM categorias ORDER BY nome ASC");
+$cat_query = $conn->query("SELECT * FROM categorias ORDER BY nome ASC");
+$mensagem = "";
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nome              = trim($_POST['nome']);
+    $categoria_id      = intval($_POST['categoria_id']);
+    $preco             = floatval($_POST['preco']);
+    $quantidade_estoque= intval($_POST['quantidade_estoque']);
+    $editora_fabricante= trim($_POST['editora_fabricante']);
+    $especificacao     = trim($_POST['especificacao']);
+    $condicao          = trim($_POST['condicao']);
+    $descricao          = trim($_POST['descricao']);
+    $imagem_url        = trim($_POST['imagem_url']);
+
+    if (!empty($nome) && $categoria_id > 0 && $preco > 0) {
+        $update_stmt = $conn->prepare("UPDATE produtos SET nome = ?, categoria_id = ?, preco = ?, quantidade_estoque = ?, editora_fabricante = ?, especificacao = ?, condicao = ?, descricao = ?, imagem_url = ? WHERE id = ?");
+        $update_stmt->bind_param("sidisssssi", $nome, $categoria_id, $preco, $quantidade_estoque, $editora_fabricante, $especificacao, $condicao, $descricao, $imagem_url, $id);
+        
+        if ($update_stmt->execute()) {
+            header("Location: produtos_listar.php?msg=atualizado");
+            exit();
+        } else {
+            $mensagem = "Erro ao atualizar produto: " . $conn->error;
+        }
+    } else {
+        $mensagem = "Preencha os campos obrigatórios!";
+    }
+}
 
 include "../includes/header.php";
 ?>
 
-<div class="formulario-card">
-    <h1>Editar Item Geek #<?= $produto['id'] ?></h1>
+<div class="card-box" style="max-width: 650px;">
+    <h1>✏️ Editar Produto #<?= $produto['id'] ?></h1>
 
-    <?php if (!empty($erro)): ?>
-        <p class="erro"><?= htmlspecialchars($erro) ?></p>
+    <?php if (!empty($mensagem)): ?>
+        <div class="alert alert-danger"><?= htmlspecialchars($mensagem) ?></div>
     <?php endif; ?>
 
-    <form method="POST" action="">
-        <div class="campo">
-            <label>Nome do Produto *</label>
-            <input type="text" name="nome" value="<?= htmlspecialchars($produto['nome']) ?>" required>
+    <form method="POST" action="produto_editar.php?id=<?= $produto['id'] ?>">
+        <div class="form-group">
+            <label for="nome">Nome do Produto *</label>
+            <input type="text" id="nome" name="nome" class="form-control" required value="<?= htmlspecialchars($produto['nome']) ?>">
         </div>
 
-        <div class="campo">
-            <label>Categoria *</label>
-            <select name="categoria_id" required>
-                <option value="">Selecione...</option>
-                <?php while ($cat = mysqli_fetch_assoc($query_cat)): ?>
-                    <option value="<?= $cat['id'] ?>" <?= ($cat['id'] == $produto['categoria_id']) ? 'selected' : '' ?>>
+        <div class="form-group">
+            <label for="categoria_id">Categoria *</label>
+            <select id="categoria_id" name="categoria_id" class="form-control" required>
+                <?php while ($cat = $cat_query->fetch_assoc()): ?>
+                    <option value="<?= $cat['id'] ?>" <?= $cat['id'] == $produto['categoria_id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($cat['nome']) ?>
                     </option>
                 <?php endwhile; ?>
             </select>
         </div>
 
-        <div class="campo-grupo">
-            <div class="campo">
-                <label>Preço (R$) *</label>
-                <input type="number" step="0.01" name="preco" value="<?= $produto['preco'] ?>" required>
+        <div style="display:flex; gap:15px;">
+            <div class="form-group" style="flex:1;">
+                <label for="preco">Preço (R$) *</label>
+                <input type="number" step="0.01" id="preco" name="preco" class="form-control" required value="<?= $produto['preco'] ?>">
             </div>
 
-            <div class="campo">
-                <label>Qtd. Estoque *</label>
-                <input type="number" name="quantidade_estoque" value="<?= $produto['quantidade_estoque'] ?>" min="0" required>
+            <div class="form-group" style="flex:1;">
+                <label for="quantidade_estoque">Estoque *</label>
+                <input type="number" id="quantidade_estoque" name="quantidade_estoque" class="form-control" required value="<?= $produto['quantidade_estoque'] ?>">
             </div>
         </div>
 
-        <div class="campo">
-            <label>Editora / Fabricante</label>
-            <input type="text" name="editora_fabricante" value="<?= htmlspecialchars($produto['editora_fabricante'] ?? '') ?>">
+        <div class="form-group">
+            <label for="editora_fabricante">Editora / Fabricante</label>
+            <input type="text" id="editora_fabricante" name="editora_fabricante" class="form-control" value="<?= htmlspecialchars($produto['editora_fabricante']) ?>">
         </div>
 
-        <div class="campo">
-            <label>Especificação (Vol. / Escala / Raridade)</label>
-            <input type="text" name="especificacao" value="<?= htmlspecialchars($produto['especificacao'] ?? '') ?>">
+        <div class="form-group">
+            <label for="especificacao">Especificação / Tamanho</label>
+            <input type="text" id="especificacao" name="especificacao" class="form-control" value="<?= htmlspecialchars($produto['especificacao']) ?>">
         </div>
 
-        <div class="campo">
-            <label>Condição</label>
-            <select name="condicao">
-                <option value="Novo/Lacrado" <?= ($produto['condicao'] === 'Novo/Lacrado') ? 'selected' : '' ?>>Novo / Lacrado</option>
-                <option value="Seminovo" <?= ($produto['condicao'] === 'Seminovo') ? 'selected' : '' ?>>Seminovo</option>
-                <option value="Raro/Colecionável" <?= ($produto['condicao'] === 'Raro/Colecionável') ? 'selected' : '' ?>>Raro / Colecionável</option>
+        <div class="form-group">
+            <label for="condicao">Condição</label>
+            <select id="condicao" name="condicao" class="form-control">
+                <option value="Novo/Lacrado" <?= $produto['condicao'] === 'Novo/Lacrado' ? 'selected' : '' ?>>Novo/Lacrado</option>
+                <option value="Usado/Seminovo" <?= $produto['condicao'] === 'Usado/Seminovo' ? 'selected' : '' ?>>Usado/Seminovo</option>
+                <option value="Colecionador" <?= $produto['condicao'] === 'Colecionador' ? 'selected' : '' ?>>Colecionador</option>
             </select>
         </div>
 
-        <div class="campo">
-            <label>URL da Imagem</label>
-            <input type="url" name="imagem_url" value="<?= htmlspecialchars($produto['imagem_url'] ?? '') ?>">
+        <div class="form-group">
+            <label for="imagem_url">Caminho da Imagem</label>
+            <input type="text" id="imagem_url" name="imagem_url" class="form-control" value="<?= htmlspecialchars($produto['imagem_url']) ?>">
         </div>
 
-        <div class="campo">
-            <label>Descrição</label>
-            <textarea name="descricao" rows="3"><?= htmlspecialchars($produto['descricao'] ?? '') ?></textarea>
+        <div class="form-group">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" name="descricao" class="form-control" rows="3"><?= htmlspecialchars($produto['descricao']) ?></textarea>
         </div>
 
-        <button type="submit" class="btn-enviar">Atualizar Produto</button>
-        <a href="produtos_listar.php" class="btn-voltar">Cancelar e Voltar</a>
+        <button type="submit" class="btn-primary">Atualizar Registro</button>
+        <div style="text-align:center;">
+            <a href="produtos_listar.php" class="btn-voltar">Cancelar</a>
+        </div>
     </form>
 </div>
 
