@@ -3,7 +3,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Conta o total de itens no carrinho
 $total_itens_carrinho = 0;
 if (isset($_SESSION['carrinho']) && is_array($_SESSION['carrinho'])) {
     $total_itens_carrinho = array_sum($_SESSION['carrinho']);
@@ -22,7 +21,7 @@ if (isset($_SESSION['carrinho']) && is_array($_SESSION['carrinho'])) {
 <header class="top-header">
     <div class="header-container">
         <!-- LOGO DA KUROMI -->
-        <a href="/geek_house/index.php" class="logo" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+        <a href="/geek_house/sobre.php" class="logo" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
             <img src="/geek_house/img/logo.png" 
                  onerror="this.onerror=null; this.src='/geek_house/img/geek_house_kuromi_logo.png';" 
                  alt="Geek House Logo" 
@@ -30,12 +29,12 @@ if (isset($_SESSION['carrinho']) && is_array($_SESSION['carrinho'])) {
             <span>GEEK HOUSE</span>
         </a>
 
-        <!-- MENU SUPERIOR COM O CARRINHO DE VERDADE -->
+        <!-- MENU SUPERIOR -->
         <nav class="nav-menu">
+            <a href="/geek_house/sobre.php" class="btn-nav">ℹ️ Sobre</a>
             <a href="/geek_house/index.php" class="btn-nav">🏪 Vitrine</a>
             
-            <!-- LINK DO CARRINHO COM CONTADOR DE ITENS -->
-            <a href="/geek_house/carrinho.php" class="btn-nav" style="background-color: #8e245f !important;">
+            <a href="/geek_house/carrinho.php" class="btn-carrinho">
                 🛒 Carrinho <strong>(<?= $total_itens_carrinho ?>)</strong>
             </a>
             
@@ -51,7 +50,8 @@ if (isset($_SESSION['carrinho']) && is_array($_SESSION['carrinho'])) {
                 <a href="/geek_house/logout.php" class="btn-logout">🚪 Sair</a>
 
             <?php else: ?>
-                <a href="/geek_house/login.php" class="btn-nav">🔑 Entrar / Cadastrar</a>
+                <a href="/geek_house/login.php" class="btn-nav">🔑 Entrar</a>
+                <a href="/geek_house/cadastrar.php" class="btn-nav" style="background-color: #5b164f !important;">✨ Cadastre-se</a>
             <?php endif; ?>
         </nav>
     </div>
