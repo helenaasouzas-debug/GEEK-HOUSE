@@ -3,10 +3,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Limpa todas as variáveis da sessão
 $_SESSION = array();
 
-// Remove cookie de sessão se existir
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000,
@@ -15,10 +13,7 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-// Destrói a sessão
 session_destroy();
-
-// Redireciona para o login
-header("Location: login.php");
-exit;
+header("Location: /geek_house/login.php?msg=deslogado");
+exit();
 ?>
