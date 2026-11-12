@@ -5,64 +5,71 @@ require_once "conexao/auth.php";
 // Exige que o cliente esteja logado para finalizar
 verificar_login();
 
-// Se o carrinho estiver vazio, volta para a vitrine
-if (empty($_SESSION['carrinho'])) {
+$mensagem_sucesso = false;
+$pedido_id = 0;
+
+// Se o carrinho estiver vazio e não for um pós-processamento, volta para a vitrine
+if (empty($_SESSION['carrinho']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: index.php");
     exit();
 }
 
-$mensagem_sucesso = false;
-$pedido_id = 0;
-
-// Buscar dados dos produtos no carrinho para resumo e cálculo
-$ids = implode(',', array_keys($_SESSION['carrinho']));
-$result = $conn->query("SELECT * FROM produtos WHERE id IN ($ids)");
 $produtos_compra = array();
 $valor_total = 0;
 
-if ($result) {
-    while ($row = $result->fetch_assoc()) {
-        $produtos_compra[] = $row;
-        $qtd = $_SESSION['carrinho'][$row['id']];
-        $valor_total += ($row['preco'] * $qtd);
+// Carrega os dados atualizados dos produtos presentes no carrinho
+if (!empty($_SESSION['carrinho'])) {
+    $ids = implode(',', array_map('intval', array_keys($_SESSION['carrinho'])));
+    if (!empty($ids)) {
+        $result = $conn->query("SELECT * FROM produtos WHERE id IN ($ids)");
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                // Indexa pelo ID para evitar erros de ordenação
+                $produtos_compra[$row['id']] = $row;
+                $qtd = $_SESSION['carrinho'][$row['id']];
+                $valor_total += ($row['preco'] * $qtd);
+            }
+        }
     }
 }
 
 // PROCESSAR O FECHAMENTO DO PEDIDO
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $rua             = trim($_POST['rua']);
-    $numero          = trim($_POST['numero']);
-    $bairro          = trim($_POST['bairro']);
-    $cidade          = trim($_POST['cidade']);
-    $estado          = trim($_POST['estado']);
-    $cep             = trim($_POST['cep']);
-    $forma_pagamento = trim($_POST['forma_pagamento']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($produtos_compra)) {
+    $rua             = trim($_POST['rua'] ?? '');
+    $numero          = trim($_POST['numero'] ?? '');
+    $bairro          = trim($_POST['bairro'] ?? '');
+    $cidade          = trim($_POST['cidade'] ?? '');
+    $estado          = trim($_POST['estado'] ?? '');
+    $cep             = trim($_POST['cep'] ?? '');
+    $forma_pagamento = trim($_POST['forma_pagamento'] ?? '');
     $usuario_id      = $_SESSION['usuario']['id'];
 
     if (!empty($rua) && !empty($cidade) && !empty($forma_pagamento)) {
         
-        // 1. Grava a Venda/Pedido no MySQL
+        // 1. Grava a Venda no Banco de Dados
         $stmt_venda = $conn->prepare("INSERT INTO vendas (usuario_id, valor_total, forma_pagamento, data_venda) VALUES (?, ?, ?, NOW())");
         $stmt_venda->bind_param("ids", $usuario_id, $valor_total, $forma_pagamento);
         
         if ($stmt_venda->execute()) {
             $pedido_id = $conn->insert_id;
 
-            // 2. Grava cada item da venda e atualiza o estoque
+            // 2. Grava cada item da venda e atualiza o estoque no banco
             $stmt_item = $conn->prepare("INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)");
             $stmt_estoque = $conn->prepare("UPDATE produtos SET quantidade_estoque = quantidade_estoque - ? WHERE id = ?");
 
-            foreach ($produtos_compra as $prod) {
-                $qtd = $_SESSION['carrinho'][$prod['id']];
-                $preco_unit = $prod['preco'];
-                
-                // Grava item
-                $stmt_item->bind_param("iiid", $pedido_id, $prod['id'], $qtd, $preco_unit);
-                $stmt_item->execute();
+            foreach ($_SESSION['carrinho'] as $prod_id => $qtd) {
+                if (isset($produtos_compra[$prod_id])) {
+                    $prod = $produtos_compra[$prod_id];
+                    $preco_unit = $prod['preco'];
+                    
+                    // Grava o item especifico com seu preço exato
+                    $stmt_item->bind_param("iiid", $pedido_id, $prod_id, $qtd, $preco_unit);
+                    $stmt_item->execute();
 
-                // Baixa no estoque
-                $stmt_estoque->bind_param("ii", $qtd, $prod['id']);
-                $stmt_estoque->execute();
+                    // Baixa no estoque
+                    $stmt_estoque->bind_param("ii", $qtd, $prod_id);
+                    $stmt_estoque->execute();
+                }
             }
 
             // 3. Limpa o carrinho da sessão
@@ -82,10 +89,10 @@ include "includes/header.php";
             <p style="font-size: 16px; color: #444; margin-bottom: 20px;">
                 Obrigado por comprar na <strong>Geek House</strong>, <?= htmlspecialchars($_SESSION['usuario']['nome']) ?>!
             </p>
-            <div class="alert alert-success" style="display:inline-block; text-align:left;">
-                <p><strong>Forma de Pagamento:</strong> <?= htmlspecialchars($_POST['forma_pagamento']) ?></p>
+            <div class="alert alert-success" style="display:inline-block; text-align:left; width: 100%;">
+                <p><strong>Forma de Pagamento:</strong> <?= htmlspecialchars($_POST['forma_pagamento'] ?? '') ?></p>
                 <p><strong>Total Pago:</strong> R$ <?= number_format($valor_total, 2, ',', '.') ?></p>
-                <p><strong>Endereço de Entrega:</strong> <?= htmlspecialchars($_POST['rua']) ?>, nº <?= htmlspecialchars($_POST['numero']) ?> - <?= htmlspecialchars($_POST['cidade']) ?>/<?= htmlspecialchars($_POST['estado']) ?></p>
+                <p><strong>Endereço de Entrega:</strong> <?= htmlspecialchars($_POST['rua'] ?? '') ?>, nº <?= htmlspecialchars($_POST['numero'] ?? '') ?> - <?= htmlspecialchars($_POST['cidade'] ?? '') ?>/<?= htmlspecialchars($_POST['estado'] ?? '') ?></p>
             </div>
             <br><br>
             <a href="index.php" class="btn-primary" style="text-decoration:none; display:inline-block; width:auto; padding: 12px 30px;">Voltar para a Loja</a>
@@ -93,11 +100,11 @@ include "includes/header.php";
     <?php else: ?>
         <h1>💳 Finalizar Pedido</h1>
         
-        <!-- RESUMO DO PEDIDO -->
+        <!-- RESUMO DOS ITENS -->
         <div style="background-color: #faf5ff; padding: 15px; border-radius: 8px; border: 1px solid #d8b4fe; margin-bottom: 25px;">
             <h3 style="color: #5b164f; margin-bottom: 10px;">Resumo dos Itens</h3>
-            <?php foreach ($produtos_compra as $prod): 
-                $qtd = $_SESSION['carrinho'][$prod['id']];
+            <?php foreach ($produtos_compra as $prod_id => $prod): 
+                $qtd = $_SESSION['carrinho'][$prod_id] ?? 0;
             ?>
                 <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom: 5px;">
                     <span><?= $qtd ?>x <?= htmlspecialchars($prod['nome']) ?></span>
@@ -111,6 +118,7 @@ include "includes/header.php";
             </div>
         </div>
 
+        <!-- FORMULÁRIO DE CHECKOUT -->
         <form method="POST" action="finalizar.php">
             <h3 style="color: #5b164f; margin-bottom: 15px;">📍 Endereço de Entrega</h3>
             
