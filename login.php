@@ -1,38 +1,24 @@
 <?php
-session_start();
+require_once "conexao/cnc.php";
+require_once "conexao/auth.php";
 
-// Se o usuário já estiver logado, redireciona para a página apropriada
-if (isset($_SESSION['usuario'])) {
-    if ($_SESSION['usuario']['tipo'] === 'admin') {
-        header("Location: admin/index.php");
-    } else {
-        header("Location: perfil.php");
-    }
-    exit;
-}
+$mensagem_erro = "";
 
-require_once "conexao/conexao.php";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = trim($_POST['email']);
+    $senha = trim($_POST['senha']);
 
-$erro = "";
+    if (!empty($email) && !empty($senha)) {
+        $stmt = $conn->prepare("SELECT id, nome, email, senha, tipo FROM usuarios WHERE email = ? LIMIT 1");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
 
-// Verifica se a requisição veio do formulário via POST
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $email = trim($_POST['email'] ?? '');
-    $senha = trim($_POST['senha'] ?? '');
-
-    if (empty($email) || empty($senha)) {
-        $erro = "Preencha o e-mail e a senha!";
-    } else {
-        // Consulta o usuário no banco de dados com Prepared Statement
-        $sql  = "SELECT id, nome, email, senha, tipo FROM usuarios WHERE email = ? LIMIT 1";
-        $stmt = mysqli_prepare($conexao, $sql);
-        mysqli_stmt_bind_param($stmt, "s", $email);
-        mysqli_stmt_execute($stmt);
-        $resultado = mysqli_stmt_get_result($stmt);
-
-        if ($usuario = mysqli_fetch_assoc($resultado)) {
+        if ($resultado->num_rows === 1) {
+            $usuario = $resultado->fetch_assoc();
+            
+            // Comparação simples de senha para ambiente acadêmico
             if ($senha === $usuario['senha']) {
-                // Cria a sessão do usuário autenticado
                 $_SESSION['usuario'] = [
                     'id'    => $usuario['id'],
                     'nome'  => $usuario['nome'],
@@ -41,20 +27,52 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 ];
 
                 if ($usuario['tipo'] === 'admin') {
-                    header("Location: admin/index.php");
+                    header("Location: /geek_house/admin/index.php");
                 } else {
-                    header("Location: perfil.php");
+                    header("Location: /geek_house/perfil.php");
                 }
-                exit;
+                exit();
             } else {
-                $erro = "E-mail ou senha incorretos!";
+                $mensagem_erro = "Senha incorreta!";
             }
         } else {
-            $erro = "E-mail ou senha incorretos!";
+            $mensagem_erro = "E-mail não cadastrado!";
         }
+    } else {
+        $mensagem_erro = "Preencha todos os campos!";
     }
 }
 
+include "includes/header.php";
+?>
+
+<div class="card-box" style="max-width: 420px;">
+    <h1>🔑 Login</h1>
+
+    <?php if (isset($_GET['erro']) && $_GET['erro'] === 'acesso_negado'): ?>
+        <div class="alert alert-danger">⚠️ Faça login para acessar a área administrativa.</div>
+    <?php endif; ?>
+
+    <?php if (!empty($mensagem_erro)): ?>
+        <div class="alert alert-danger"><?= htmlspecialchars($mensagem_erro) ?></div>
+    <?php endif; ?>
+
+    <form method="POST" action="login.php">
+        <div class="form-group">
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" name="email" class="form-control" required placeholder="admin@geekhouse.com">
+        </div>
+
+        <div class="form-group">
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" name="senha" class="form-control" required placeholder="12345">
+        </div>
+
+        <button type="submit" class="btn-primary">Entrar no Sistema</button>
+    </form>
+</div>
+
+<?php include "includes/footer.php"; ?>
 include "includes/header.php";
 ?>
 
