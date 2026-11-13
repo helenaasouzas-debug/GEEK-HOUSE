@@ -30,7 +30,6 @@ $result = $conn->query($sql);
                     <div class="product-price">R$ <?= number_format($prod['preco'], 2, ',', '.') ?></div>
                     <p style="font-size: 12px; color: #888; margin-bottom: 10px;">Estoque: <?= $prod['quantidade_estoque'] ?> un.</p>
                     
-                    <!-- BOTÃO REAL DE ADICIONAR AO CARRINHO -->
                     <a href="carrinho.php?acao=add&id=<?= $prod['id'] ?>" class="btn-primary" style="text-decoration:none; display:block; text-align:center;">
                         🛒 Adicionar ao Carrinho
                     </a>
