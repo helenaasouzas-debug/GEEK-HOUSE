@@ -10,7 +10,6 @@ if ($id <= 0) {
     exit();
 }
 
-// Buscar dados do produto existente
 $stmt = $conn->prepare("SELECT * FROM produtos WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
