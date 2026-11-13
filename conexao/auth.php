@@ -1,5 +1,5 @@
 <?php
-// conexao/auth.php - Gerenciamento de Sessões e Trava de Segurança
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
