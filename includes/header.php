@@ -29,12 +29,10 @@ if (isset($_SESSION['carrinho']) && is_array($_SESSION['carrinho'])) {
             <span>GEEK HOUSE</span>
         </a>
 
-        <!-- MENU SUPERIOR LIMPO -->
         <nav class="nav-menu">
             <a href="/geek_house/sobre.php" class="btn-nav">ℹ️ Sobre</a>
             <a href="/geek_house/index.php" class="btn-nav">🏪 Vitrine</a>
             
-            <!-- CARRINHO: APENAS PARA VISITANTES OU CLIENTES (ADMIN NÃO VÊ) -->
             <?php if (!isset($_SESSION['usuario']) || $_SESSION['usuario']['tipo'] !== 'admin'): ?>
                 <a href="/geek_house/carrinho.php" class="btn-carrinho">
                     🛒 Carrinho <strong>(<?= $total_itens_carrinho ?>)</strong>
@@ -44,7 +42,6 @@ if (isset($_SESSION['carrinho']) && is_array($_SESSION['carrinho'])) {
             <?php if (isset($_SESSION['usuario'])): ?>
                 <a href="/geek_house/perfil.php" class="btn-nav">👤 Meu Perfil</a>
 
-                <!-- APENAS O BOTÃO PAINEL ADMIN NO MENU (SEM DUPLICAR OPÇÕES) -->
                 <?php if ($_SESSION['usuario']['tipo'] === 'admin'): ?>
                     <a href="/geek_house/admin/index.php" class="btn-nav">⚙️ Painel Admin</a>
                 <?php endif; ?>
