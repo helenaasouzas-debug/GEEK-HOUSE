@@ -5,17 +5,14 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Inicializa a estrutura da sessão do carrinho se não existir
 if (!isset($_SESSION['carrinho'])) {
     $_SESSION['carrinho'] = array();
 }
 
-// LÓGICA DE AÇÕES DO CARRINHO (Adicionar, Remover, Atualizar)
 $acao = isset($_GET['acao']) ? $_GET['acao'] : '';
 $id   = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if ($acao === 'add' && $id > 0) {
-    // Se já estiver no carrinho, incrementa a quantidade
     if (isset($_SESSION['carrinho'][$id])) {
         $_SESSION['carrinho'][$id] += 1;
     } else {
@@ -55,7 +52,6 @@ if ($acao === 'limpar') {
 
 include "includes/header.php";
 
-// Buscar os produtos do banco de dados que estão no carrinho
 $produtos_carrinho = array();
 $valor_total = 0;
 
