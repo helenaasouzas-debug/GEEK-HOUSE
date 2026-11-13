@@ -7,7 +7,6 @@ verificar_admin();
 
 include "../includes/header.php";
 
-// Busca todas as vendas com os dados do cliente
 $sql_vendas = "SELECT v.*, u.nome AS cliente_nome, u.email AS cliente_email 
                FROM vendas v 
                INNER JOIN usuarios u ON v.usuario_id = u.id 
@@ -23,7 +22,6 @@ $result_vendas = $conn->query($sql_vendas);
         <?php while ($venda = $result_vendas->fetch_assoc()): ?>
             <div style="border: 1px solid #d8b4fe; border-radius: 10px; padding: 20px; margin-bottom: 20px; background-color: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
                 
-                <!-- CABEÇALHO DO PEDIDO -->
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f3e8ff; padding-bottom: 12px; margin-bottom: 15px;">
                     <div>
                         <span style="font-size: 18px; font-weight: bold; color: #5b164f;">Pedido #<?= $venda['id'] ?></span>
@@ -38,12 +36,10 @@ $result_vendas = $conn->query($sql_vendas);
                     </div>
                 </div>
 
-                <!-- DADOS DO CLIENTE -->
                 <p style="font-size: 14px; color: #333; margin-bottom: 15px;">
                     👤 <strong>Cliente:</strong> <?= htmlspecialchars($venda['cliente_nome']) ?> (<em><?= htmlspecialchars($venda['cliente_email']) ?></em>)
                 </p>
 
-                <!-- TABELA DE ITENS DO PEDIDO -->
                 <?php
                 $stmt_itens = $conn->prepare("SELECT iv.*, p.nome AS produto_nome, p.imagem_url 
                                                FROM itens_venda iv 
@@ -80,7 +76,6 @@ $result_vendas = $conn->query($sql_vendas);
                     </tbody>
                 </table>
 
-                <!-- TOTAL DO PEDIDO -->
                 <div style="text-align: right; margin-top: 15px; font-size: 16px; color: #5b164f;">
                     Total do Pedido: <strong style="color: #8e245f; font-size: 20px;">R$ <?= number_format($venda['valor_total'], 2, ',', '.') ?></strong>
                 </div>
