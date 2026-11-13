@@ -11,7 +11,6 @@ include "../includes/header.php";
         Bem-vindo, <strong><?= htmlspecialchars($_SESSION['usuario']['nome']) ?></strong>!
     </p>
     
-    <!-- TODOS OS BOTÕES COM A MESMA COR E ESTILO -->
     <div style="display:flex; flex-direction:column; gap:15px; margin-bottom:25px;">
         <a href="produto_cadastrar.php" class="btn-primary" style="text-decoration:none; text-align:center;">
             ➕ Cadastrar Novo Item Geek
