@@ -5,7 +5,6 @@ verificar_admin();
 
 $mensagem = "";
 
-// Carregar categorias dinamicamente do banco
 $cat_query = $conn->query("SELECT * FROM categorias ORDER BY nome ASC");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
