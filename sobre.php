@@ -16,7 +16,6 @@ include "includes/header.php";
         <li><strong>Cartas Pokémon:</strong> Boosters, decks estruturados e cartas avulsas raras.</li>
     </ul>
 
-    <!-- BOTÃO DE DESTAQUE PARA IR À LOJA -->
     <div style="text-align: center; margin: 30px 0;">
         <a href="index.php" class="btn-primary" style="text-decoration: none; padding: 14px 30px; font-size: 18px; display: inline-block; width: auto;">
             🛍️ Ver Nossa Vitrine de Produtos ➔
