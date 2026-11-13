@@ -5,7 +5,6 @@ include "includes/header.php";
 $categoria_filtro = (int) ($_GET['categoria'] ?? 0);
 $busca            = trim($_GET['busca'] ?? '');
 
-// Monta a consulta dinâmica com filtros
 $sql = "SELECT p.*, c.nome AS categoria_nome 
         FROM produtos p 
         INNER JOIN categorias c ON p.categoria_id = c.id 
@@ -29,7 +28,6 @@ $categorias_query = mysqli_query($conexao, "SELECT * FROM categorias ORDER BY no
 
 <h1 class="titulo-pagina">Catálogo Geek</h1>
 
-<!-- Formulário de Filtro e Busca -->
 <div class="card-filtro">
     <form method="GET" action="produtos.php" class="form-busca-inline">
         <input type="text" name="busca" placeholder="Buscar mangá, figure, pokémon..." value="<?= htmlspecialchars($busca) ?>">
