@@ -1,25 +1,14 @@
--- ============================================================
--- PROJETO GEEK HOUSE - SISTEMA WEB E-COMMERCE
--- ARQUIVO: banco.sql (Banco de Dados MySQL)
--- ============================================================
-
 CREATE DATABASE IF NOT EXISTS loja_geek DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE loja_geek;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
--- ------------------------------------------------------------
--- 1. ESTRUTURA DAS TABELAS
--- ------------------------------------------------------------
-
--- Tabela: categorias
 DROP TABLE IF EXISTS categorias;
 CREATE TABLE categorias (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(50) NOT NULL UNIQUE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabela: usuarios
 DROP TABLE IF EXISTS usuarios;
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -29,7 +18,6 @@ CREATE TABLE usuarios (
     tipo ENUM('admin', 'cliente') NOT NULL DEFAULT 'cliente'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabela: produtos
 DROP TABLE IF EXISTS produtos;
 CREATE TABLE produtos (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -45,7 +33,6 @@ CREATE TABLE produtos (
     FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabela: vendas
 DROP TABLE IF EXISTS vendas;
 CREATE TABLE vendas (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -56,7 +43,6 @@ CREATE TABLE vendas (
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabela: itens_venda
 DROP TABLE IF EXISTS itens_venda;
 CREATE TABLE itens_venda (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -70,11 +56,6 @@ CREATE TABLE itens_venda (
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- ------------------------------------------------------------
--- 2. CARGA DE DADOS INICIAIS (INSERTS)
--- ------------------------------------------------------------
-
--- Inserindo Categorias (15 Categorias Expandidas)
 INSERT INTO categorias (id, nome) VALUES
 (1, 'Mangás'),
 (2, 'HQs & Quadrinhos'),
@@ -92,7 +73,6 @@ INSERT INTO categorias (id, nome) VALUES
 (14, 'Funko Pop'),
 (15, 'Light Novels');
 
--- Inserindo Usuários (Administrador e Clientes para teste de Login/Sessão)
 INSERT INTO usuarios (id, nome, email, senha, tipo) VALUES
 (1, 'Administrador Geek', 'admin@geekhouse.com', '12345', 'admin'),
 (2, 'Cliente Geek', 'cliente@geekhouse.com', '12345', 'cliente'),
@@ -103,7 +83,6 @@ INSERT INTO usuarios (id, nome, email, senha, tipo) VALUES
 (7, 'Diana Prince', 'diana@amazon.com', '12345', 'cliente'),
 (8, 'Barry Allen', 'barry@centralcitypd.com', '12345', 'cliente');
 
--- Inserindo Produtos Colecionáveis
 INSERT INTO produtos (id, nome, categoria_id, preco, quantidade_estoque, editora_fabricante, especificacao, condicao, descricao, imagem_url) VALUES
 (1, 'Mangá One Piece Volume 01', 1, 34.90, 15, 'Panini Comics', 'Vol. 01', 'Novo/Lacrado', 'Primeiro volume da épica jornada de Luffy', 'img/mangas/one_piece_vol_01.jpg'),
 (2, 'Mangá One Piece Volume 02', 1, 34.90, 12, 'Panini Comics', 'Vol. 02', 'Novo/Lacrado', 'Continuação das aventuras de One Piece', 'img/mangas/one_piece_vol_02.jpg'),
@@ -118,14 +97,12 @@ INSERT INTO produtos (id, nome, categoria_id, preco, quantidade_estoque, editora
 (11, 'Pokémon TCG Booster Pack', 9, 12.00, 50, 'Copag', 'Edição Estelar', 'Novo/Lacrado', 'Pacote de cartas colecionáveis Pokémon', 'img/cards/pokemon_booster.jpg'),
 (12, 'Funko Pop! Naruto Uzumaki', 14, 130.00, 7, 'Funko Import', 'Pop! Animation', 'Novo/Lacrado', 'Boneco colecionável de vinil do Naruto', 'img/funko/naruto.jpg');
 
--- Inserindo Vendas e Histórico de Pedidos
 INSERT INTO vendas (id, usuario_id, data_venda, valor_total, forma_pagamento) VALUES
 (1, 4, '2026-10-01 10:30:00', 284.90, 'Cartão de Crédito'),
 (2, 5, '2026-10-02 11:15:00', 179.70, 'PIX'),
 (3, 6, '2026-10-03 14:20:00', 340.00, 'Cartão de Crédito'),
 (4, 7, '2026-10-04 16:45:00', 99.90, 'Boleto Bancário');
 
--- Inserindo Itens dos Pedidos
 INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES
 (1, 1, 1, 34.90),
 (1, 5, 1, 250.00),
