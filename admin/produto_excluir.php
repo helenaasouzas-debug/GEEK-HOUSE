@@ -6,13 +6,12 @@ require_once "../conexao/auth.php";
 // 2. Trava de segurança: impede que usuários comuns ou não autenticados excluam registros via URL
 verificar_admin();
 
-// 3. Captura o ID do produto enviado pela URL (ex: produto_excluir.php?id=3)
-// Usamos intval() para garantir que o valor seja tratado estritamente como um número inteiro
+// 3. Captura o ID do produto enviado pela URL
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 // 4. Executa a exclusão apenas se o ID for maior que zero (válido)
 if ($id > 0) {
-    // 5. Prepared Statement (Consulta Preparada):
+    // 5. Prepared Statement:
     // Prepara a instrução SQL DELETE com a interrogação (?) para evitar SQL Injection
     $stmt = $conn->prepare("DELETE FROM produtos WHERE id = ?");
     
