@@ -6,8 +6,7 @@ require_once "../conexao/auth.php";
 // 2. Trava de segurança: garante que apenas administradores autenticados acessem a página de edição
 verificar_admin();
 
-// 3. Captura o ID do produto passado pela URL (ex: produto_editar.php?id=5)
-// intval() converte a entrada para número inteiro por segurança
+// 3. Captura o ID do produto passado pela URL
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 // Se o ID for inválido (menor ou igual a zero), redireciona de volta para a lista
@@ -16,15 +15,12 @@ if ($id <= 0) {
     exit();
 }
 
-// 4. Prepared Statement (Consulta Preparada):
-// Busca os dados atuais do produto no MySQL usando o ID capturado.
-// O parâmetro '?' evita injeção de SQL.
+// 4. Prepared Statement ndo o ID capturado.
 $stmt = $conn->prepare("SELECT * FROM produtos WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $produto = $stmt->get_result()->fetch_assoc();
 
-// Se o produto não existir no banco de dados, redireciona para a listagem
 if (!$produto) {
     header("Location: produtos_listar.php");
     exit();
@@ -36,7 +32,6 @@ $mensagem = "";
 
 // 6. Processamento do formulário quando o usuário clica em "Atualizar Registro" (método POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Sanitização e tratamento dos dados enviados no formulário
     $nome               = trim($_POST['nome']);
     $categoria_id       = intval($_POST['categoria_id']);
     $preco              = floatval($_POST['preco']);
@@ -47,13 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $descricao           = trim($_POST['descricao']);
     $imagem_url         = trim($_POST['imagem_url']);
 
-    // Validação dos campos obrigatórios
     if (!empty($nome) && $categoria_id > 0 && $preco > 0) {
         // 7. Prepared Statement para o comando UPDATE:
         // Atualiza os registros do produto selecionado no banco de dados com base no ID
         $update_stmt = $conn->prepare("UPDATE produtos SET nome = ?, categoria_id = ?, preco = ?, quantidade_estoque = ?, editora_fabricante = ?, especificacao = ?, condicao = ?, descricao = ?, imagem_url = ? WHERE id = ?");
         
-        // "sidisssssi" define os tipos: s = string, i = int, d = double (float). O último 'i' refere-se ao WHERE id = ?
         $update_stmt->bind_param("sidisssssi", $nome, $categoria_id, $preco, $quantidade_estoque, $editora_fabricante, $especificacao, $condicao, $descricao, $imagem_url, $id);
         
         // Executa a alteração no MySQL
