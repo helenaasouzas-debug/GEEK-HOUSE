@@ -14,7 +14,6 @@ $cat_query = $conn->query("SELECT * FROM categorias ORDER BY nome ASC");
 // 4. Verifica se o formulário foi enviado via método POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 5. Recebe e sanitiza os dados enviados pelo formulário:
-    // trim() remove espaços extras nas pontas, intval() converte para inteiro e floatval() para número decimal
     $nome               = trim($_POST['nome']);
     $categoria_id       = intval($_POST['categoria_id']);
     $preco              = floatval($_POST['preco']);
@@ -28,14 +27,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 6. Validação dos campos obrigatórios antes de cadastrar
     if (!empty($nome) && $categoria_id > 0 && $preco > 0) {
         
-        // 7. Prepared Statement (Consulta Preparada):
-        // Prepara a instrução SQL de inserção (INSERT) utilizando interrogações (?) como marcadores.
-        // Isso impede ataques de Injeção de SQL (SQL Injection).
+        // 7. Prepared Statement
         $stmt = $conn->prepare("INSERT INTO produtos (nome, categoria_id, preco, quantidade_estoque, editora_fabricante, especificacao, condicao, descricao, imagem_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         
         // 8. Associa os parâmetros (bind_param):
         // "sidisssss" define os tipos de dados passados em ordem:
-        // s = string, i = integer, d = double (float)
         $stmt->bind_param("sidisssss", $nome, $categoria_id, $preco, $quantidade_estoque, $editora_fabricante, $especificacao, $condicao, $descricao, $imagem_url);
         
         // 9. Executa o comando no banco de dados
