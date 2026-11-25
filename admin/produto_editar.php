@@ -1,44 +1,64 @@
 <?php
+// 1. Inclui o arquivo de conexão com o banco de dados ($conn) e o controle de autenticação
 require_once "../conexao/cnc.php";
 require_once "../conexao/auth.php";
+
+// 2. Trava de segurança: garante que apenas administradores autenticados acessem a página de edição
 verificar_admin();
 
+// 3. Captura o ID do produto passado pela URL (ex: produto_editar.php?id=5)
+// intval() converte a entrada para número inteiro por segurança
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
+// Se o ID for inválido (menor ou igual a zero), redireciona de volta para a lista
 if ($id <= 0) {
     header("Location: produtos_listar.php");
     exit();
 }
 
+// 4. Prepared Statement (Consulta Preparada):
+// Busca os dados atuais do produto no MySQL usando o ID capturado.
+// O parâmetro '?' evita injeção de SQL.
 $stmt = $conn->prepare("SELECT * FROM produtos WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $produto = $stmt->get_result()->fetch_assoc();
 
+// Se o produto não existir no banco de dados, redireciona para a listagem
 if (!$produto) {
     header("Location: produtos_listar.php");
     exit();
 }
 
+// 5. Busca as categorias no banco para preencher o campo <select> do formulário
 $cat_query = $conn->query("SELECT * FROM categorias ORDER BY nome ASC");
 $mensagem = "";
 
+// 6. Processamento do formulário quando o usuário clica em "Atualizar Registro" (método POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nome              = trim($_POST['nome']);
-    $categoria_id      = intval($_POST['categoria_id']);
-    $preco             = floatval($_POST['preco']);
-    $quantidade_estoque= intval($_POST['quantidade_estoque']);
-    $editora_fabricante= trim($_POST['editora_fabricante']);
-    $especificacao     = trim($_POST['especificacao']);
-    $condicao          = trim($_POST['condicao']);
-    $descricao          = trim($_POST['descricao']);
-    $imagem_url        = trim($_POST['imagem_url']);
+    // Sanitização e tratamento dos dados enviados no formulário
+    $nome               = trim($_POST['nome']);
+    $categoria_id       = intval($_POST['categoria_id']);
+    $preco              = floatval($_POST['preco']);
+    $quantidade_estoque = intval($_POST['quantidade_estoque']);
+    $editora_fabricante = trim($_POST['editora_fabricante']);
+    $especificacao      = trim($_POST['especificacao']);
+    $condicao           = trim($_POST['condicao']);
+    $descricao           = trim($_POST['descricao']);
+    $imagem_url         = trim($_POST['imagem_url']);
 
+    // Validação dos campos obrigatórios
     if (!empty($nome) && $categoria_id > 0 && $preco > 0) {
+        // 7. Prepared Statement para o comando UPDATE:
+        // Atualiza os registros do produto selecionado no banco de dados com base no ID
         $update_stmt = $conn->prepare("UPDATE produtos SET nome = ?, categoria_id = ?, preco = ?, quantidade_estoque = ?, editora_fabricante = ?, especificacao = ?, condicao = ?, descricao = ?, imagem_url = ? WHERE id = ?");
+        
+        // "sidisssssi" define os tipos: s = string, i = int, d = double (float). O último 'i' refere-se ao WHERE id = ?
         $update_stmt->bind_param("sidisssssi", $nome, $categoria_id, $preco, $quantidade_estoque, $editora_fabricante, $especificacao, $condicao, $descricao, $imagem_url, $id);
         
+        // Executa a alteração no MySQL
         if ($update_stmt->execute()) {
+            // Se alterado com sucesso, redireciona para a lista avisando a atualização
             header("Location: produtos_listar.php?msg=atualizado");
             exit();
         } else {
@@ -49,22 +69,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// 8. Reutilização de código: carrega o cabeçalho padrão
 include "../includes/header.php";
 ?>
 
 <div class="card-box" style="max-width: 650px;">
     <h1>✏️ Editar Produto #<?= $produto['id'] ?></h1>
 
+    <!-- Exibe mensagens de erro de validação ou de banco de dados -->
     <?php if (!empty($mensagem)): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($mensagem) ?></div>
     <?php endif; ?>
 
+    <!-- Formulário com método POST passando o ID do produto atual na URL de ação -->
     <form method="POST" action="produto_editar.php?id=<?= $produto['id'] ?>">
+        
+        <!-- Campo Nome preenchido dinamicamente com os dados buscados no MySQL ($produto['nome']) -->
         <div class="form-group">
             <label for="nome">Nome do Produto *</label>
             <input type="text" id="nome" name="nome" class="form-control" required value="<?= htmlspecialchars($produto['nome']) ?>">
         </div>
 
+        <!-- Select de Categorias com verificação para marcar a categoria atual como 'selected' -->
         <div class="form-group">
             <label for="categoria_id">Categoria *</label>
             <select id="categoria_id" name="categoria_id" class="form-control" required>
@@ -98,6 +124,7 @@ include "../includes/header.php";
             <input type="text" id="especificacao" name="especificacao" class="form-control" value="<?= htmlspecialchars($produto['especificacao']) ?>">
         </div>
 
+        <!-- Select de Condição com operador ternário mantendo a opção atual selecionada -->
         <div class="form-group">
             <label for="condicao">Condição</label>
             <select id="condicao" name="condicao" class="form-control">
@@ -124,4 +151,7 @@ include "../includes/header.php";
     </form>
 </div>
 
-<?php include "../includes/footer.php"; ?>
+<?php 
+// 9. Reutilização de código: carrega o rodapé padrão
+include "../includes/footer.php"; 
+?>
