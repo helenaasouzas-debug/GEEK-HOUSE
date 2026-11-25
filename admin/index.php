@@ -4,7 +4,6 @@ require_once "../conexao/auth.php";
 
 // 2. Trava de segurança da Área Administrativa:
 // Esta função verifica se existe um usuário logado e se o perfil dele é 'admin'.
-// Se alguém tentar acessar digitando o link direto sem permissão, é redirecionado imediatamente.
 verificar_admin();
 
 // 3. Inclui o cabeçalho padrão com o menu de navegação da loja (Reutilização de código)
