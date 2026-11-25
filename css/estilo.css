@@ -1,3 +1,5 @@
+/* 1. CONFIGURAÇÕES GERAIS E ESTRUTURA */
+* {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -12,6 +14,14 @@ body {
     min-height: 100vh;
 }
 
+.main-content {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+    flex: 1;
+}
+
+/* 2. CABEÇALHO E MENU DE NAVEGAÇÃO */
 .top-header {
     background: linear-gradient(135deg, #5b164f, #8e245f);
     color: #ffffff;
@@ -114,13 +124,7 @@ body {
     transform: translateY(-2px);
 }
 
-.main-content {
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 0 20px;
-    flex: 1;
-}
-
+/* 3. CARDS, FORMULÁRIOS E BOTÕES */
 .card-box {
     background: #ffffff;
     border-radius: 12px;
@@ -212,6 +216,7 @@ body {
     margin-top: 15px;
 }
 
+/* 4. TABELAS ADMINISTRATIVAS */
 .table-custom {
     width: 100%;
     border-collapse: collapse;
@@ -238,59 +243,142 @@ body {
     background-color: #faf5ff;
 }
 
+/* 5. BARRA DE FILTROS POR CATEGORIA (PILLS) */
+.filter-bar {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0 30px 0;
+}
+
+.filter-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    background-color: #ffffff;
+    color: #5b164f;
+    border: 2px solid #5b164f;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.filter-btn:hover, 
+.filter-btn.active {
+    background-color: #5b164f;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(91, 22, 79, 0.25);
+}
+
+/* 6. GRADE DE PRODUTOS */
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 24px;
     margin-top: 25px;
+    margin-bottom: 40px;
 }
 
 .product-card {
     background: #ffffff;
     border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: transform 0.2s;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .product-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(91, 22, 79, 0.15);
+    border-color: #d8b4fe;
 }
 
-.product-card img {
+/* Moldura Proporcional da Imagem */
+.product-thumb {
+    position: relative;
     width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 15px;
+    height: 200px;
+    background-color: #faf8fc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border-bottom: 1px solid #f3e8ff;
 }
 
-.product-title {
-    font-size: 18px;
-    color: #5b164f;
-    margin-bottom: 8px;
+.product-thumb img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 .product-category {
-    font-size: 12px;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 11px;
+    font-weight: bold;
     background: #f3e8ff;
     color: #7c3aed;
-    padding: 4px 8px;
+    padding: 4px 10px;
     border-radius: 12px;
-    display: inline-block;
-    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Informações e Detalhes do Produto */
+.product-info {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    justify-content: space-between;
+}
+
+.product-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #5b164f;
+    margin-bottom: 6px;
+    line-height: 1.3;
+}
+
+.product-brand {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 12px;
 }
 
 .product-price {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: bold;
     color: #8e245f;
-    margin-bottom: 15px;
+    margin-bottom: 4px;
 }
 
+.product-stock {
+    font-size: 12px;
+    color: #888888;
+    margin-bottom: 12px;
+}
+
+.no-products {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px dashed #5b164f;
+    color: #5b164f;
+}
+
+/* 7. ALERTAS E RODAPÉ */
 .alert {
     padding: 12px 18px;
     border-radius: 8px;
@@ -311,6 +399,11 @@ body {
 .footer {
     background-color: #5b164f;
     color: #f3e8ff;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 40px;
+    font-size: 14px;
+}
     text-align: center;
     padding: 20px 0;
     margin-top: 40px;
