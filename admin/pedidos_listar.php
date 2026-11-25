@@ -10,9 +10,6 @@ verificar_admin();
 include "../includes/header.php";
 
 // 4. Consulta SQL com INNER JOIN:
-// Busca todas as vendas (v.*) e faz o cruzamento com a tabela de usuários (u)
-// para resgatar o nome e e-mail do cliente que realizou cada compra.
-// O 'ORDER BY v.id DESC' garante que os pedidos mais recentes apareçam primeiro.
 $sql_vendas = "SELECT v.*, u.nome AS cliente_nome, u.email AS cliente_email 
                FROM vendas v 
                INNER JOIN usuarios u ON v.usuario_id = u.id 
@@ -53,9 +50,6 @@ $result_vendas = $conn->query($sql_vendas);
 
                 <?php
                 // 7. Prepared Statement (Consulta preparada e segura):
-                // Para cada pedido, fazemos uma nova busca na tabela 'itens_venda' com INNER JOIN na tabela 'produtos'.
-                // Isso traz os itens específicos deste pedido com o nome e imagem do produto.
-                // Usamos 'bind_param("i", ...)' passando o ID da venda como número inteiro para prevenir SQL Injection.
                 $stmt_itens = $conn->prepare("SELECT iv.*, p.nome AS produto_nome, p.imagem_url 
                                                FROM itens_venda iv 
                                                INNER JOIN produtos p ON iv.produto_id = p.id 
@@ -76,9 +70,8 @@ $result_vendas = $conn->query($sql_vendas);
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- 8. Laço secundário (while): percorre os itens pertencentes a este pedido ($result_itens) -->
+                        <!-- 8. While: percorre os itens pertencentes a este pedido ($result_itens) -->
                         <?php while ($item = $result_itens->fetch_assoc()): 
-                            // Cálculo em tempo de execução: multiplica a quantidade comprada pelo valor unitário registrado
                             $subtotal = $item['quantidade'] * $item['preco_unitario'];
                         ?>
                             <tr>
@@ -94,7 +87,7 @@ $result_vendas = $conn->query($sql_vendas);
                                 <td>R$ <?= number_format($item['preco_unitario'], 2, ',', '.') ?></td>
                                 <td><strong>R$ <?= number_format($subtotal, 2, ',', '.') ?></strong></td>
                             </tr>
-                        <?php endwhile; // Fim do laço dos itens do pedido ?>
+                        <?php endwhile; ?>
                     </tbody>
                 </table>
 
@@ -103,7 +96,7 @@ $result_vendas = $conn->query($sql_vendas);
                     Total do Pedido: <strong style="color: #8e245f; font-size: 20px;">R$ <?= number_format($venda['valor_total'], 2, ',', '.') ?></strong>
                 </div>
             </div>
-        <?php endwhile; // Fim do laço principal que percorre todas as vendas ?>
+        <?php endwhile; ?>
 
     <?php else: ?>
         <!-- Bloco exibido se o banco não retornar nenhuma venda cadastrada -->
