@@ -48,7 +48,7 @@ include "includes/header.php";
 
 <!-- Formulário de login -->
 <div class="card-box" style="max-width: 450px;">
-    <h1>🔑 Entrar na Geek House</h1>
+    <h1>Entrar na Geek House</h1>
 
     <?php if (isset($_GET['erro']) && $_GET['erro'] === 'acesso_negado'): ?>
         <div class="alert alert-danger">⚠️ Você precisa estar logado para acessar a página solicitada.</div>
