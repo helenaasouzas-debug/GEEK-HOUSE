@@ -1,97 +1,80 @@
 <?php
-// 1. Inclui os arquivos de conexão com o banco ($conn) e o controle de autenticação/sessão
+// Autenticação de usuário
 require_once "conexao/cnc.php";
-require_once "conexao/auth.php";
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 $mensagem_erro = "";
 
-// 2. Verifica se o formulário foi enviado via método POST ao clicar em "Entrar"
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 3. Recebe e limpa os dados digitados nos campos de e-mail e senha
     $email = trim($_POST['email']);
     $senha = trim($_POST['senha']);
 
-    // 4. Validação: garante que ambos os campos foram preenchidos
     if (!empty($email) && !empty($senha)) {
-        
-        // 5. Prepared Statement (Consulta Preparada):
-        // Busca o usuário no MySQL através do e-mail digitado.
-        // O uso de '?' com bind_param("s", ...) previne ataques de SQL Injection.
-        $stmt = $conn->prepare("SELECT id, nome, email, senha, tipo FROM usuarios WHERE email = ? LIMIT 1");
-        $stmt->bind_param("s", $email);
+        // Consulta credenciais no MySQL
+        $stmt = $conn->prepare("SELECT * FROM usuarios WHERE email = ? AND senha = ? LIMIT 1");
+        $stmt->bind_param("ss", $email, $senha);
         $stmt->execute();
-        $resultado = $stmt->get_result();
+        $res = $stmt->get_result();
 
-        // 6. Verifica se encontrou exatamente 1 usuário cadastrado com esse e-mail
-        if ($resultado->num_rows === 1) {
-            $usuario = $resultado->fetch_assoc();
-            
-            // 7. Autenticação de Senha:
-            // Compara a senha informada no formulário com a senha registrada no banco de dados.
-            if ($senha === $usuario['senha']) {
-                
-                // 8. Criação da Sessão de Autenticação:
-                // Grava o array $_SESSION['usuario'] com os dados do usuário autenticado.
-                // Isso permite que o sistema reconheça quem está logado em todas as páginas do portal.
-                $_SESSION['usuario'] = [
-                    'id'    => $usuario['id'],
-                    'nome'  => $usuario['nome'],
-                    'email' => $usuario['email'],
-                    'tipo'  => $usuario['tipo']
-                ];
+        if ($res && $res->num_rows === 1) {
+            $user = $res->fetch_assoc();
+            $_SESSION['usuario'] = [
+                'id'    => $user['id'],
+                'nome'  => $user['nome'],
+                'email' => $user['email'],
+                'tipo'  => $user['tipo']
+            ];
 
-                // 9. Redirecionamento baseado no perfil de acesso (admin vs cliente):
-                if ($usuario['tipo'] === 'admin') {
-                    header("Location: /geek_house/admin/index.php");
-                } else {
-                    header("Location: /geek_house/perfil.php");
-                }
-                exit();
+            // Redirecionamento de acordo com o perfil
+            if ($user['tipo'] === 'admin') {
+                header("Location: admin/index.php");
             } else {
-                $mensagem_erro = "Senha incorreta!";
+                header("Location: index.php");
             }
+            exit();
         } else {
-            $mensagem_erro = "E-mail não cadastrado!";
+            $mensagem_erro = "E-mail ou senha incorretos!";
         }
     } else {
         $mensagem_erro = "Preencha todos os campos!";
     }
 }
 
-// 10. Reutilização de código: inclui o cabeçalho padrão da página
 include "includes/header.php";
 ?>
 
-<div class="card-box" style="max-width: 420px;">
-    <h1>🔑 Login</h1>
+<!-- Formulário de login -->
+<div class="card-box" style="max-width: 450px;">
+    <h1>🔑 Entrar na Geek House</h1>
 
-    <!-- Exibe alerta de acesso negado caso o usuário tente acessar uma área restrita sem logar -->
     <?php if (isset($_GET['erro']) && $_GET['erro'] === 'acesso_negado'): ?>
-        <div class="alert alert-danger">⚠️ Faça login para acessar a área administrativa.</div>
+        <div class="alert alert-danger">⚠️ Você precisa estar logado para acessar a página solicitada.</div>
     <?php endif; ?>
 
-    <!-- Exibe mensagens de erro de validação (e-mail não encontrado, senha incorreta, etc.) -->
     <?php if (!empty($mensagem_erro)): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($mensagem_erro) ?></div>
     <?php endif; ?>
 
-    <!-- Formulário de login enviando dados via POST para a própria página -->
     <form method="POST" action="login.php">
         <div class="form-group">
-            <label for="email">E-mail:</label>
-            <input type="email" id="email" name="email" class="form-control" required placeholder="admin@geekhouse.com">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" class="form-control" required placeholder="seu@email.com">
         </div>
 
         <div class="form-group">
-            <label for="senha">Senha:</label>
-            <input type="password" id="senha" name="senha" class="form-control" required placeholder="12345">
+            <label for="senha">Senha</label>
+            <input type="password" id="senha" name="senha" class="form-control" required placeholder="••••••••">
         </div>
 
-        <button type="submit" class="btn-primary">Entrar no Sistema</button>
+        <button type="submit" class="btn-enviar">Acessar Conta</button>
     </form>
+
+    <p style="text-align: center; margin-top: 20px; font-size: 14px;">
+        Não tem uma conta? <a href="cadastrar.php" style="color: #7c3aed; font-weight: bold;">Cadastre-se aqui</a>.
+    </p>
 </div>
 
-<?php 
-// 11. Reutilização de código: inclui o rodapé padrão da página
-include "includes/footer.php"; 
-?>
+<?php include "includes/footer.php"; ?>
