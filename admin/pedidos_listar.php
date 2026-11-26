@@ -16,12 +16,12 @@ $result_vendas = $conn->query($sql_vendas);
 
 <!-- Painel de visualização de pedidos -->
 <div class="card-box" style="max-width: 1000px;">
-    <h1>📦 Gestão de Pedidos dos Clientes</h1>
+    <h1>Gestão de Pedidos dos Clientes</h1>
     <p style="text-align: center; color: #666; margin-bottom: 25px;">Acompanhe e gerencie as vendas realizadas na Geek House.</p>
 
     <!-- Alerta de exclusão de pedido -->
     <?php if (isset($_GET['msg']) && $_GET['msg'] === 'pedido_excluido'): ?>
-        <div class="alert alert-success">🗑️ Pedido excluído com sucesso!</div>
+        <div class="alert alert-success">Pedido excluído com sucesso!</div>
     <?php endif; ?>
 
     <?php if ($result_vendas && $result_vendas->num_rows > 0): ?>
@@ -42,14 +42,14 @@ $result_vendas = $conn->query($sql_vendas);
                         </span>
                         <!-- Botão para excluir o pedido -->
                         <a href="pedido_excluir.php?id=<?= $venda['id'] ?>" class="btn-danger" onclick="return confirm('Deseja realmente excluir o Pedido #<?= $venda['id'] ?>?');" style="text-decoration:none; padding: 5px 12px; font-size: 13px;">
-                            🗑️ Excluir Pedido
+                            Excluir Pedido
                         </a>
                     </div>
                 </div>
 
                 <!-- Dados do cliente -->
                 <p style="font-size: 14px; color: #333; margin-bottom: 15px;">
-                    👤 <strong>Cliente:</strong> <?= htmlspecialchars($venda['cliente_nome']) ?> (<em><?= htmlspecialchars($venda['cliente_email']) ?></em>)
+                    <strong>Cliente:</strong> <?= htmlspecialchars($venda['cliente_nome']) ?> (<em><?= htmlspecialchars($venda['cliente_email']) ?></em>)
                 </p>
 
                 <!-- Itens do pedido -->
