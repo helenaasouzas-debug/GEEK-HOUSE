@@ -1,5 +1,5 @@
-<<?php
-// Consulta e listagem de produtos para gestão
+<?php
+// Consulta e listagem de produtos
 require_once "../conexao/cnc.php";
 require_once "../conexao/auth.php";
 verificar_admin();
@@ -36,7 +36,7 @@ $result = $conn->query($sql);
                 <th>Categoria</th>
                 <th>Preço</th>
                 <th>Estoque</th>
-                <th>Ações</th>
+                <th style="width: 180px;">Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -52,8 +52,11 @@ $result = $conn->query($sql);
                         <td>R$ <?= number_format($prod['preco'], 2, ',', '.') ?></td>
                         <td><?= $prod['quantidade_estoque'] ?> un.</td>
                         <td>
-                            <a href="produto_editar.php?id=<?= $prod['id'] ?>" class="btn-edit">✏️ Editar</a>
-                            <a href="produto_excluir.php?id=<?= $prod['id'] ?>" class="btn-danger" onclick="return confirm('Deseja realmente excluir este produto?');">🗑️ Excluir</a>
+                            <!-- Alinhamento flexbox impede a quebra e sobreposição dos botões -->
+                            <div class="action-buttons">
+                                <a href="produto_editar.php?id=<?= $prod['id'] ?>" class="btn-edit">✏️ Editar</a>
+                                <a href="produto_excluir.php?id=<?= $prod['id'] ?>" class="btn-danger" onclick="return confirm('Deseja realmente excluir este produto?');">🗑️ Excluir</a>
+                            </div>
                         </td>
                     </tr>
                 <?php endwhile; ?>
