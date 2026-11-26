@@ -21,15 +21,15 @@ include "../includes/header.php";
             ➕ Cadastrar Novo Item Geek
         </a>
         <a href="produtos_listar.php" class="btn-primary" style="text-decoration:none; text-align:center;">
-            📋 Gerenciar Produtos (Editar / Excluir)
+            Gerenciar Produtos (Editar / Excluir)
         </a>
         <a href="pedidos_listar.php" class="btn-primary" style="text-decoration:none; text-align:center;">
-            📦 Ver Todos os Pedidos dos Clientes
+            Ver Todos os Pedidos dos Clientes
         </a>
     </div>
 
     <div style="text-align:center;">
-        <a href="../index.php" class="btn-voltar">🏪 Ver Vitrine da Loja</a>
+        <a href="../index.php" class="btn-voltar">Ver Vitrine da Loja</a>
     </div>
 </div>
 
