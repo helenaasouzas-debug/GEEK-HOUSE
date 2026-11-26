@@ -1,9 +1,10 @@
 <?php
-
+// Inicialização de sessão
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Trava para exigir usuário logado
 function verificar_login() {
     if (!isset($_SESSION['usuario'])) {
         header("Location: /geek_house/login.php?erro=acesso_negado");
@@ -11,6 +12,7 @@ function verificar_login() {
     }
 }
 
+// Trava para exigir perfil de administrador
 function verificar_admin() {
     verificar_login();
     if ($_SESSION['usuario']['tipo'] !== 'admin') {
