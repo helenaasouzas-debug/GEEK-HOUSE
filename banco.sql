@@ -113,8 +113,6 @@ INSERT INTO produtos (id, nome, categoria_id, preco, quantidade_estoque, editora
 (8, 'Camiseta Ryomen Sukuna (G)', 4, 79.90, 10, 'Piticas', 'Tamanho G', 'Novo/Lacrado', 'Camiseta estilizada do Rei das Maldições', 'img/camisetas/sukuna_g.jpg'),
 (9, 'Caneca Marvel Comics', 5, 45.00, 20, 'Canecas & Cia', '350ml Porcelana', 'Novo/Lacrado', 'Caneca temática dos Vingadores', 'img/canecas/marvel.jpg'),
 (10, 'Caneca Attack on Titan', 5, 49.90, 15, 'Canecas & Cia', '350ml Porcelana', 'Novo/Lacrado', 'Caneca com o brasão da Tropa de Exploração', 'img/canecas/aot.jpg'),
-(11, 'Pokémon TCG Booster Pack', 9, 12.00, 50, 'Copag', 'Edição Estelar', 'Novo/Lacrado', 'Pacote de cartas colecionáveis Pokémon', 'img/cards/pokemon_booster.jpg'),
-(12, 'Funko Pop! Naruto Uzumaki', 14, 130.00, 7, 'Funko Import', 'Pop! Animation', 'Novo/Lacrado', 'Boneco colecionável de vinil do Naruto', 'img/funko/naruto.jpg');
 
 -- Inserção de Vendas
 INSERT INTO vendas (id, usuario_id, data_venda, valor_total, forma_pagamento) VALUES
