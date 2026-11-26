@@ -39,7 +39,7 @@ include "includes/header.php";
 
 <!-- Formulário de cadastro de cliente -->
 <div class="card-box" style="max-width: 450px;">
-    <h1>✨ Criar Nova Conta</h1>
+    <h1>Criar Nova Conta</h1>
 
     <?php if (!empty($mensagem_erro)): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($mensagem_erro) ?></div>
