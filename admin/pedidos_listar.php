@@ -17,13 +17,18 @@ $result_vendas = $conn->query($sql_vendas);
 <!-- Painel de visualização de pedidos -->
 <div class="card-box" style="max-width: 1000px;">
     <h1>📦 Gestão de Pedidos dos Clientes</h1>
-    <p style="text-align: center; color: #666; margin-bottom: 25px;">Acompanhe as vendas realizadas na Geek House em tempo real.</p>
+    <p style="text-align: center; color: #666; margin-bottom: 25px;">Acompanhe e gerencie as vendas realizadas na Geek House.</p>
+
+    <!-- Alerta de exclusão de pedido -->
+    <?php if (isset($_GET['msg']) && $_GET['msg'] === 'pedido_excluido'): ?>
+        <div class="alert alert-success">🗑️ Pedido excluído com sucesso!</div>
+    <?php endif; ?>
 
     <?php if ($result_vendas && $result_vendas->num_rows > 0): ?>
         <?php while ($venda = $result_vendas->fetch_assoc()): ?>
             <div style="border: 1px solid #d8b4fe; border-radius: 10px; padding: 20px; margin-bottom: 20px; background-color: #ffffff;">
                 
-                <!-- Dados do pedido -->
+                <!-- Cabeçalho do Pedido com botão de exclusão -->
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f3e8ff; padding-bottom: 12px; margin-bottom: 15px;">
                     <div>
                         <span style="font-size: 18px; font-weight: bold; color: #5b164f;">Pedido #<?= $venda['id'] ?></span>
@@ -31,10 +36,14 @@ $result_vendas = $conn->query($sql_vendas);
                             📅 <?= date('d/m/Y H:i', strtotime($venda['data_venda'])) ?>
                         </span>
                     </div>
-                    <div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
                         <span style="background-color: #f3e8ff; color: #7c3aed; font-weight: bold; padding: 5px 12px; border-radius: 15px; font-size: 13px;">
                             💳 <?= htmlspecialchars($venda['forma_pagamento']) ?>
                         </span>
+                        <!-- Botão para excluir o pedido -->
+                        <a href="pedido_excluir.php?id=<?= $venda['id'] ?>" class="btn-danger" onclick="return confirm('Deseja realmente excluir o Pedido #<?= $venda['id'] ?>?');" style="text-decoration:none; padding: 5px 12px; font-size: 13px;">
+                            🗑️ Excluir Pedido
+                        </a>
                     </div>
                 </div>
 
