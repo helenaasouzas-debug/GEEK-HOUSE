@@ -148,14 +148,14 @@ include "includes/header.php";
                 <input type="text" id="cep" name="cep" class="form-control" required placeholder="00000-000">
             </div>
 
-            <h3 style="color: #5b164f; margin-top: 25px; margin-bottom: 15px;">💰 Forma de Pagamento</h3>
+            <h3 style="color: #5b164f; margin-top: 25px; margin-bottom: 15px;">Forma de Pagamento</h3>
             
             <div class="form-group">
                 <select name="forma_pagamento" id="forma_pagamento" class="form-control" required>
                     <option value="">Selecione como deseja pagar...</option>
-                    <option value="Pix">⚡ Pix (Aprovação Instantânea)</option>
-                    <option value="Cartão de Crédito">💳 Cartão de Crédito</option>
-                    <option value="Boleto Bancário">📄 Boleto Bancário</option>
+                    <option value="Pix">Pix (Aprovação Instantânea)</option>
+                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    <option value="Boleto Bancário">Boleto Bancário</option>
                 </select>
             </div>
 
