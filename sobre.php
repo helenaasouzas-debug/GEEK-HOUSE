@@ -17,12 +17,13 @@ include "includes/header.php";
         <li><strong>Mangás:</strong> Edições especiais, lançamentos e coleções completas das principais editoras.</li>
         <li><strong>Action Figures:</strong> Figures originais de marcas renomadas (Bandai, Banpresto, Good Smile).</li>
         <li><strong>Cartas Pokémon:</strong> Boosters, decks estruturados e cartas avulsas raras.</li>
+        <li><strong>Colecionáveis:</strong> Camisetas, canecas e itens de decoração.</li>
     </ul>
 
     <!-- Chamada para a vitrine -->
     <div style="text-align: center; margin: 30px 0;">
         <a href="index.php" class="btn-primary" style="text-decoration: none; padding: 14px 30px; font-size: 18px; display: inline-block; width: auto;">
-            🛍️ Ver Nossa Vitrine de Produtos ➔
+            Ver Nossa Vitrine de Produtos ➔
         </a>
     </div>
 
