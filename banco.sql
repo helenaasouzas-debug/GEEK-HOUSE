@@ -1,6 +1,5 @@
 -- 1. Criação do Banco de Dados:
 -- Cria o banco 'loja_geek' caso ainda não exista, definindo a codificação utf8mb4 
--- para suportar acentos, caracteres especiais e emojis.
 CREATE DATABASE IF NOT EXISTS loja_geek DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE loja_geek;
 
@@ -18,7 +17,7 @@ CREATE TABLE categorias (
     nome VARCHAR(50) NOT NULL UNIQUE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabela de Usuários: gerencia os acessos e define os perfis (admin vs cliente)
+-- Tabela de Usuários: gerencia os acessos e define os perfis
 DROP TABLE IF EXISTS usuarios;
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -28,7 +27,7 @@ CREATE TABLE usuarios (
     tipo ENUM('admin', 'cliente') NOT NULL DEFAULT 'cliente'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabela de Produtos: catálogo principal com Chave Estrangeira (FK) ligada à tabela categorias
+-- Tabela de Produtos: catálogo principal
 DROP TABLE IF EXISTS produtos;
 CREATE TABLE produtos (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -55,7 +54,7 @@ CREATE TABLE vendas (
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Tabela de Itens da Venda: detalha os produtos e quantidades compradas em cada pedido (Relacionamento 1:N)
+-- Tabela de Itens da Venda: detalha os produtos e quantidades compradas em cada pedido
 DROP TABLE IF EXISTS itens_venda;
 CREATE TABLE itens_venda (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -71,7 +70,7 @@ CREATE TABLE itens_venda (
 SET FOREIGN_KEY_CHECKS = 1;
 
 
--- 3. INSERÇÃO DE DADOS INICIAIS (POPULAÇÃO DO BANCO)
+-- 3. INSERÇÃO DE DADOS INICIAIS
 
 -- Inserção das Categorias cadastradas na loja
 INSERT INTO categorias (id, nome) VALUES
@@ -91,7 +90,7 @@ INSERT INTO categorias (id, nome) VALUES
 (14, 'Funko Pop'),
 (15, 'Light Novels');
 
--- Inserção dos Usuários de teste (com o tipo 'admin' para a gestão e 'cliente' para compras)
+-- Inserção dos Usuários de teste
 INSERT INTO usuarios (id, nome, email, senha, tipo) VALUES
 (1, 'Administrador Geek', 'admin@geekhouse.com', '12345', 'admin'),
 (2, 'Cliente Geek', 'cliente@geekhouse.com', '12345', 'cliente'),
@@ -102,7 +101,7 @@ INSERT INTO usuarios (id, nome, email, senha, tipo) VALUES
 (7, 'Diana Prince', 'diana@amazon.com', '12345', 'cliente'),
 (8, 'Barry Allen', 'barry@centralcitypd.com', '12345', 'cliente');
 
--- Inserção de Produtos no catálogo (preços, estoques e categorias vinculadas)
+-- Inserção de Produtos no catálogo
 INSERT INTO produtos (id, nome, categoria_id, preco, quantidade_estoque, editora_fabricante, especificacao, condicao, descricao, imagem_url) VALUES
 (1, 'Mangá One Piece Volume 01', 1, 34.90, 15, 'Panini Comics', 'Vol. 01', 'Novo/Lacrado', 'Primeiro volume da épica jornada de Luffy', 'img/mangas/one_piece_vol_01.jpg'),
 (2, 'Mangá One Piece Volume 02', 1, 34.90, 12, 'Panini Comics', 'Vol. 02', 'Novo/Lacrado', 'Continuação das aventuras de One Piece', 'img/mangas/one_piece_vol_02.jpg'),
@@ -117,14 +116,14 @@ INSERT INTO produtos (id, nome, categoria_id, preco, quantidade_estoque, editora
 (11, 'Pokémon TCG Booster Pack', 9, 12.00, 50, 'Copag', 'Edição Estelar', 'Novo/Lacrado', 'Pacote de cartas colecionáveis Pokémon', 'img/cards/pokemon_booster.jpg'),
 (12, 'Funko Pop! Naruto Uzumaki', 14, 130.00, 7, 'Funko Import', 'Pop! Animation', 'Novo/Lacrado', 'Boneco colecionável de vinil do Naruto', 'img/funko/naruto.jpg');
 
--- Inserção de Vendas para povoar a tabela de gestão de pedidos dos clientes
+-- Inserção de Vendas
 INSERT INTO vendas (id, usuario_id, data_venda, valor_total, forma_pagamento) VALUES
 (1, 4, '2026-10-01 10:30:00', 284.90, 'Cartão de Crédito'),
 (2, 5, '2026-10-02 11:15:00', 179.70, 'PIX'),
 (3, 6, '2026-10-03 14:20:00', 340.00, 'Cartão de Crédito'),
 (4, 7, '2026-10-04 16:45:00', 99.90, 'Boleto Bancário');
 
--- Inserção dos Itens comprados associados a cada venda registrada
+-- Inserção dos Itens comprados
 INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES
 (1, 1, 1, 34.90),
 (1, 5, 1, 250.00),
