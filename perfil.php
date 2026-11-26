@@ -40,7 +40,7 @@ include "includes/header.php";
 
 <!-- Formulário do perfil -->
 <div class="card-box" style="max-width: 550px;">
-    <h1>👤 Meu Perfil</h1>
+    <h1>Meu Perfil</h1>
 
     <?php if (!empty($mensagem_sucesso)): ?>
         <div class="alert alert-success"><?= htmlspecialchars($mensagem_sucesso) ?></div>
