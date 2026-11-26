@@ -1,7 +1,7 @@
 <?php
+// Processamento do pedido e gravação no banco
 require_once "conexao/cnc.php";
 require_once "conexao/auth.php";
-
 verificar_login();
 
 $mensagem_sucesso = false;
@@ -15,6 +15,7 @@ if (empty($_SESSION['carrinho']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
 $produtos_compra = array();
 $valor_total = 0;
 
+// Carrega os dados dos produtos no carrinho
 if (!empty($_SESSION['carrinho'])) {
     $ids = implode(',', array_map('intval', array_keys($_SESSION['carrinho'])));
     if (!empty($ids)) {
@@ -29,6 +30,7 @@ if (!empty($_SESSION['carrinho'])) {
     }
 }
 
+// Confirmação do pedido
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($produtos_compra)) {
     $rua             = trim($_POST['rua'] ?? '');
     $numero          = trim($_POST['numero'] ?? '');
@@ -41,12 +43,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($produtos_compra)) {
 
     if (!empty($rua) && !empty($cidade) && !empty($forma_pagamento)) {
         
+        // 1. Grava a venda principal
         $stmt_venda = $conn->prepare("INSERT INTO vendas (usuario_id, valor_total, forma_pagamento, data_venda) VALUES (?, ?, ?, NOW())");
         $stmt_venda->bind_param("ids", $usuario_id, $valor_total, $forma_pagamento);
         
         if ($stmt_venda->execute()) {
             $pedido_id = $conn->insert_id;
 
+            // 2. Grava os itens da venda e atualiza o estoque
             $stmt_item = $conn->prepare("INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)");
             $stmt_estoque = $conn->prepare("UPDATE produtos SET quantidade_estoque = quantidade_estoque - ? WHERE id = ?");
 
@@ -63,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($produtos_compra)) {
                 }
             }
 
+            // 3. Limpa o carrinho
             $_SESSION['carrinho'] = array();
             $mensagem_sucesso = true;
         }
@@ -72,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($produtos_compra)) {
 include "includes/header.php";
 ?>
 
+<!-- Formulário de checkout e tela de confirmação -->
 <div class="card-box" style="max-width: 750px;">
     <?php if ($mensagem_sucesso): ?>
         <div style="text-align: center; padding: 20px;">
@@ -90,134 +96,7 @@ include "includes/header.php";
     <?php else: ?>
         <h1>💳 Finalizar Pedido</h1>
         
-        <div style="background-color: #faf5ff; padding: 15px; border-radius: 8px; border: 1px solid #d8b4fe; margin-bottom: 25px;">
-            <h3 style="color: #5b164f; margin-bottom: 10px;">Resumo dos Itens</h3>
-            <?php foreach ($produtos_compra as $prod_id => $prod): 
-                $qtd = $_SESSION['carrinho'][$prod_id] ?? 0;
-            ?>
-                <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom: 5px;">
-                    <span><?= $qtd ?>x <?= htmlspecialchars($prod['nome']) ?></span>
-                    <strong>R$ <?= number_format($prod['preco'] * $qtd, 2, ',', '.') ?></strong>
-                </div>
-            <?php
-// 1. Inclui a conexão com o banco de dados ($conn) e as funções de autenticação
-require_once "conexao/cnc.php";
-require_once "conexao/auth.php";
-
-// 2. Controle de Acesso:
-// Garante que apenas usuários logados acessem a página de checkout.
-// Se o visitante tentar acessar sem estar autenticado, é enviado para a tela de login.
-verificar_login();
-
-$mensagem_sucesso = false;
-$pedido_id = 0;
-
-// 3. Trava do Carrinho Vazio:
-// Se o carrinho estiver vazio e não for um envio de formulário (POST), redireciona para a vitrine
-if (empty($_SESSION['carrinho']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: index.php");
-    exit();
-}
-
-$produtos_compra = array();
-$valor_total = 0;
-
-// 4. Carrega os dados atualizados dos produtos presentes no carrinho
-if (!empty($_SESSION['carrinho'])) {
-    // array_map('intval', ...) garante a segurança convertendo todas as chaves em números inteiros
-    $ids = implode(',', array_map('intval', array_keys($_SESSION['carrinho'])));
-    if (!empty($ids)) {
-        $result = $conn->query("SELECT * FROM produtos WHERE id IN ($ids)");
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $produtos_compra[$row['id']] = $row;
-                $qtd = $_SESSION['carrinho'][$row['id']];
-                // Calcula o valor total geral da compra acumulando os subtotais
-                $valor_total += ($row['preco'] * $qtd);
-            }
-        }
-    }
-}
-
-// 5. PROCESSAMENTO DA VENDA (QUANDO O USUÁRIO CLICA EM CONFIRMAR E PAGAR)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($produtos_compra)) {
-    // Captura e limpa os campos informados no formulário de endereço e pagamento
-    $rua             = trim($_POST['rua'] ?? '');
-    $numero          = trim($_POST['numero'] ?? '');
-    $bairro          = trim($_POST['bairro'] ?? '');
-    $cidade          = trim($_POST['cidade'] ?? '');
-    $estado          = trim($_POST['estado'] ?? '');
-    $cep             = trim($_POST['cep'] ?? '');
-    $forma_pagamento = trim($_POST['forma_pagamento'] ?? '');
-    $usuario_id      = $_SESSION['usuario']['id'];
-
-    if (!empty($rua) && !empty($cidade) && !empty($forma_pagamento)) {
-        
-        // 6. Inserção do Cabeçalho da Venda (Prepared Statement):
-        // Registra o ID do comprador, o valor total e a forma de pagamento na tabela 'vendas'
-        $stmt_venda = $conn->prepare("INSERT INTO vendas (usuario_id, valor_total, forma_pagamento, data_venda) VALUES (?, ?, ?, NOW())");
-        $stmt_venda->bind_param("ids", $usuario_id, $valor_total, $forma_pagamento);
-        
-        if ($stmt_venda->execute()) {
-            // $conn->insert_id: recupera a chave primária (ID) que acabou de ser gerada para esta venda
-            $pedido_id = $conn->insert_id;
-
-            // Prepara previamente os comendos para evitar recriá-los dentro do laço
-            $stmt_item = $conn->prepare("INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)");
-            $stmt_estoque = $conn->prepare("UPDATE produtos SET quantidade_estoque = quantidade_estoque - ? WHERE id = ?");
-
-            // 7. Gravação dos Itens e Baixa no Estoque:
-            // Percorre cada item do carrinho gravando em 'itens_venda' e subtraindo a quantidade do estoque do produto
-            foreach ($_SESSION['carrinho'] as $prod_id => $qtd) {
-                if (isset($produtos_compra[$prod_id])) {
-                    $prod = $produtos_compra[$prod_id];
-                    $preco_unit = $prod['preco'];
-
-                    // Insere o item com o ID do pedido gerado ($pedido_id)
-                    $stmt_item->bind_param("iiid", $pedido_id, $prod_id, $qtd, $preco_unit);
-                    $stmt_item->execute();
-
-                    // Atualiza a tabela 'produtos' dando baixa no estoque
-                    $stmt_estoque->bind_param("ii", $qtd, $prod_id);
-                    $stmt_estoque->execute();
-                }
-            }
-
-            // 8. Limpa o carrinho da sessão após finalizar o pedido com sucesso
-            $_SESSION['carrinho'] = array();
-            $mensagem_sucesso = true;
-        }
-    }
-}
-
-// 9. Reutilização de código: carrega o cabeçalho padrão
-include "includes/header.php";
-?>
-
-<div class="card-box" style="max-width: 750px;">
-    <!-- TELA 1: CONFIRMAÇÃO DO PEDIDO (Exibida após o processamento da venda) -->
-    <?php if ($mensagem_sucesso): ?>
-        <div style="text-align: center; padding: 20px;">
-            <h1 style="color: #166534; margin-bottom: 15px;">🎉 Pedido #<?= $pedido_id ?> Realizado com Sucesso!</h1>
-            <p style="font-size: 16px; color: #444; margin-bottom: 20px;">
-                Obrigado por comprar na <strong>Geek House</strong>, <?= htmlspecialchars($_SESSION['usuario']['nome']) ?>!
-            </p>
-            
-            <!-- Resumo final com dados do pedido, pagamento e endereço -->
-            <div class="alert alert-success" style="display:inline-block; text-align:left; width: 100%;">
-                <p><strong>Forma de Pagamento:</strong> <?= htmlspecialchars($_POST['forma_pagamento'] ?? '') ?></p>
-                <p><strong>Total Pago:</strong> R$ <?= number_format($valor_total, 2, ',', '.') ?></p>
-                <p><strong>Endereço de Entrega:</strong> <?= htmlspecialchars($_POST['rua'] ?? '') ?>, nº <?= htmlspecialchars($_POST['numero'] ?? '') ?> - <?= htmlspecialchars($_POST['cidade'] ?? '') ?>/<?= htmlspecialchars($_POST['estado'] ?? '') ?></p>
-            </div>
-            <br><br>
-            <a href="index.php" class="btn-primary" style="text-decoration:none; display:inline-block; width:auto; padding: 12px 30px;">Voltar para a Loja</a>
-        </div>
-    
-    <!-- TELA 2: FORMULÁRIO DE CHECKOUT (Exibida para o cliente preencher dados de entrega e pagamento) -->
-    <?php else: ?>
-        <h1>💳 Finalizar Pedido</h1>
-        
-        <!-- Bloco de resumo dos itens e valores da compra -->
+        <!-- Resumo dos produtos -->
         <div style="background-color: #faf5ff; padding: 15px; border-radius: 8px; border: 1px solid #d8b4fe; margin-bottom: 25px;">
             <h3 style="color: #5b164f; margin-bottom: 10px;">Resumo dos Itens</h3>
             <?php foreach ($produtos_compra as $prod_id => $prod): 
@@ -228,7 +107,6 @@ include "includes/header.php";
                     <strong>R$ <?= number_format($prod['preco'] * $qtd, 2, ',', '.') ?></strong>
                 </div>
             <?php endforeach; ?>
-            
             <hr style="border:0; border-top: 1px solid #d8b4fe; margin: 10px 0;">
             <div style="display:flex; justify-content:space-between; font-size:18px; color: #5b164f;">
                 <span>Total a Pagar:</span>
@@ -236,7 +114,6 @@ include "includes/header.php";
             </div>
         </div>
 
-        <!-- Formulário enviando endereço e forma de pagamento via POST para a própria página -->
         <form method="POST" action="finalizar.php">
             <h3 style="color: #5b164f; margin-bottom: 15px;">📍 Endereço de Entrega</h3>
             
@@ -290,7 +167,4 @@ include "includes/header.php";
     <?php endif; ?>
 </div>
 
-<?php 
-// 10. Reutilização de código: inclui o rodapé padrão da página
-include "includes/footer.php"; 
-?>
+<?php include "includes/footer.php"; ?>
