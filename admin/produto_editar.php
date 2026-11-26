@@ -53,7 +53,7 @@ include "../includes/header.php";
 
 <!-- Formulário de edição de produto -->
 <div class="card-box" style="max-width: 600px;">
-    <h1>✏️ Editar Produto #<?= $prod['id'] ?></h1>
+    <h1>Editar Produto #<?= $prod['id'] ?></h1>
 
     <?php if (!empty($mensagem_sucesso)): ?>
         <div class="alert alert-success"><?= htmlspecialchars($mensagem_sucesso) ?></div>
