@@ -10,8 +10,6 @@ $categoria_filtro = (int) ($_GET['categoria'] ?? 0);
 $busca            = trim($_GET['busca'] ?? '');
 
 // 4. Construção Dinâmica da Consulta SQL:
-// Inicia a query base unindo 'produtos' e 'categorias' via INNER JOIN.
-// O 'WHERE 1=1' facilita a anexação condicional de múltiplos filtros (AND ...) sem quebrar a sintaxe SQL.
 $sql = "SELECT p.*, c.nome AS categoria_nome 
         FROM produtos p 
         INNER JOIN categorias c ON p.categoria_id = c.id 
@@ -66,7 +64,7 @@ $categorias_query = mysqli_query($conexao, "SELECT * FROM categorias ORDER BY no
 <div class="filter-bar">
     <a href="produtos.php<?= !empty($busca) ? '?busca=' . urlencode($busca) : '' ?>" 
        class="filter-btn <?= $categoria_filtro === 0 ? 'active' : '' ?>">
-        ✨ Todos os Produtos
+        Todos os Produtos
     </a>
     
     <?php if ($categorias_query && mysqli_num_rows($categorias_query) > 0): ?>
