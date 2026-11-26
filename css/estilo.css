@@ -132,7 +132,7 @@ body {
     font-size: 15px;
 }
 
-/* BOTÕES GERAIS */
+/* BOTÕES GERAIS E TABELAS */
 .btn-primary,
 .btn-enviar {
     display: inline-block;
@@ -159,22 +159,44 @@ body {
     margin-top: 15px;
 }
 
-.btn-edit {
-    background-color: #3b82f6;
-    color: #ffffff;
-    padding: 6px 12px;
+/* CONTAINER DOS BOTÕES NA TABELA */
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.btn-edit,
+.btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 12px;
     border-radius: 6px;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.btn-edit {
+    background-color: #3b82f6 !important;
+    color: #ffffff !important;
+}
+
+.btn-edit:hover {
+    background-color: #2563eb !important;
 }
 
 .btn-danger {
-    background-color: #ef4444;
-    color: #ffffff;
-    padding: 6px 12px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+}
+
+.btn-danger:hover {
+    background-color: #dc2626 !important;
 }
 
 /* TABELAS ADMINISTRATIVAS */
@@ -197,6 +219,7 @@ body {
 .table-custom td {
     padding: 12px 14px;
     border-bottom: 1px solid #f3e8ff;
+    vertical-align: middle;
 }
 
 /* VITRINE EM GRADE (ESTILO GOOGLE SHOPPING) */
