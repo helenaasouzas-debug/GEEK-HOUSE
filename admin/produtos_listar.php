@@ -15,7 +15,7 @@ $result = $conn->query($sql);
 
 <!-- Tabela de gerenciamento de produtos -->
 <div class="card-box" style="max-width: 1000px;">
-    <h1>📋 Gerenciamento de Produtos</h1>
+    <h1>Gerenciamento de Produtos</h1>
 
     <?php if (isset($_GET['msg']) && $_GET['msg'] === 'excluido'): ?>
         <div class="alert alert-success">Produto excluído com sucesso!</div>
@@ -54,8 +54,8 @@ $result = $conn->query($sql);
                         <td>
                             <!-- Alinhamento flexbox impede a quebra e sobreposição dos botões -->
                             <div class="action-buttons">
-                                <a href="produto_editar.php?id=<?= $prod['id'] ?>" class="btn-edit">✏️ Editar</a>
-                                <a href="produto_excluir.php?id=<?= $prod['id'] ?>" class="btn-danger" onclick="return confirm('Deseja realmente excluir este produto?');">🗑️ Excluir</a>
+                                <a href="produto_editar.php?id=<?= $prod['id'] ?>" class="btn-edit">Editar</a>
+                                <a href="produto_excluir.php?id=<?= $prod['id'] ?>" class="btn-danger" onclick="return confirm('Deseja realmente excluir este produto?');">Excluir</a>
                             </div>
                         </td>
                     </tr>
