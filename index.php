@@ -18,7 +18,7 @@ $result = $conn->query($sql);
 
 <!-- Título principal -->
 <div class="vitrine-header">
-    <h1>🏪 Vitrine Geek House</h1>
+    <h1>Vitrine Geek House</h1>
     <p>Confira nossos lançamentos de mangás, figures, HQs e colecionáveis!</p>
 </div>
 
